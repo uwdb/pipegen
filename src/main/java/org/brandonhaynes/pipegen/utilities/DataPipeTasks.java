@@ -18,14 +18,14 @@ public class DataPipeTasks {
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
         create(configuration.importTask);
-        //create(configuration.exportTask);
+        create(configuration.exportTask);
     }
 
     public static void create(Task task) throws IOException, InterruptedException, MonitorException {
-        //DataPipeTasks.build(task.getConfiguration());
-        //DataPipeTasks.instrument(task);
+        DataPipeTasks.build(task.getConfiguration());
+        DataPipeTasks.instrument(task);
         DataPipeTasks.verifyExistingFunctionality(task);
-        //DataPipeTasks.verifyDataPipeFunctionality(task);
+        DataPipeTasks.verifyDataPipeFunctionality(task);
     }
 
     public static boolean build(CompileTimeConfiguration configuration) throws IOException, InterruptedException {
