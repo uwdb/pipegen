@@ -1,0 +1,24 @@
+name: Spark
+version: 52
+path: /home/bhaynes/research/spark/
+classPaths:
+  - core/target/*
+  - build/scala-2.11.7/lib/*
+  - external/mqtt/target/scala-2.11/*
+instrumentation:
+  port: 7781
+  timeout: 360
+  trace: $DIR/templates/ImportTracer.java
+  agent: $DIR/lib/btrace-agent.jar
+  logs: /tmp
+  commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
+  classes: .*Runner
+  debug: false
+datapipe:
+  #build:  build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests package
+  build:  build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests install
+  #import: build/mvn test -DwildcartSuites=org.apache.spark.FileSuite -Dtest=none
+  import: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none surefire:test
+  export: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none surefire:test
+  verify: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none surefire:test
+  debug: true

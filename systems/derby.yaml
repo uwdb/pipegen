@@ -1,0 +1,32 @@
+name: Derby
+version: 51
+path: /home/bhaynes/research/derby/db-derby-10.12.1.1-src
+classPaths:
+  - jars/sane/*
+instrumentation:
+  port: 7781
+  timeout: 180
+  trace: $DIR/templates/ImportTracer.java
+  agent: $DIR/lib/btrace-agent.jar
+  logs: /tmp
+  commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
+  classes: .*JUnitTestRunner.*
+  debug: true
+datapipe:
+  build:  ant clobber all buildjars
+  import: "ant -Dderby.junit.testclass=org.apache.derbyTesting.functionTests.tests.tools.ImportExportTest
+               -Djava.security.policy='<NONE>'
+               -Dthreads=1
+               -DenableTestListenerEvents=true
+               junit-single"
+  export: "ant -Dderby.junit.testclass=org.apache.derbyTesting.functionTests.tests.tools.ImportExportTest
+               -Djava.security.policy='<NONE>'
+               -Dthreads=1
+               -DenableTestListenerEvents=true
+               junit-single"
+  verify: "ant -Dderby.junit.testclass=org.apache.derbyTesting.functionTests.tests.tools.ImportExportTest
+               -Djava.security.policy='<NONE>'
+               -Dthreads=1
+               -DenableTestListenerEvents=true
+               junit-single"
+  debug: true
