@@ -68,15 +68,9 @@ public class ExpressionReplacer {
                         !expression.getClassName().startsWith(PipeGen.class.getPackage().getName()) &
                         expression.getLineNumber() == line &&
                         expression.getMethodName().matches(targetExpression)) {
-                    //log.info("Skip3 " + behavior.getLongName() + "\n" + expression.getMethodName() + "\n" + expression.getSignature());
-                //else if(expression.getMethodName().equals("intercept"))
-                //    log.info("Skipping " + behavior.getLongName() + "\n" + expression.getMethodName() + "\n" + expression.getSignature());
-                //else if(expression.getLineNumber() == line) {
-                    //if(!behavior.getDeclaringClass().getName().contains("spark")) {
+
                         log.info("Modifying " + behavior.getLongName() + ":" + expression.getSignature());
                         expression.replace(replacementExpression);
-                    //} else
-                    //    log.info("Skipped call site" + behavior.getLongName() + "\n" + expression.getMethodName() + "\n" + expression.getSignature());
                 }
             }
         });
