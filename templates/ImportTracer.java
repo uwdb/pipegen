@@ -54,12 +54,13 @@ public class ImportTracer {
 //        println(buffer.toString());
 //    }
 
+    /*
     @OnMethod(clazz="org.apache.hadoop.fs.FileSystem",
     //@OnMethod(clazz="org.apache.hadoop.hdfs.DistributedFileSystem",
     //@OnMethod(clazz="org.apache.hadoop.fs.RawLocalFileSystem",
     //@OnMethod(clazz="org.apache.hadoop.fs.LocalFileSystem",
             method="open")
-    public static void OnHadoopFileSystem(@Self Object self, AnyType[] args) {
+    public static void OnHadoopFileSystemOpen(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 
         buffer.append("Entry:").append(LINE_SEPARATOR);
@@ -67,6 +68,22 @@ public class ImportTracer {
         buffer.append(probeLine()).append(LINE_SEPARATOR);
         printArray(buffer, args);
         //printFields(buffer, self);
+        printFields(buffer, args[0] instanceof Path ? args[0] : self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
+*/
+
+    @OnMethod(clazz="org.apache.hadoop.fs.FileSystem",
+            method="create")
+    public static void OnHadoopFileSystemCreate(@Self Object self, AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
+
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
         printFields(buffer, args[0] instanceof Path ? args[0] : self);
         jstack(buffer);
 

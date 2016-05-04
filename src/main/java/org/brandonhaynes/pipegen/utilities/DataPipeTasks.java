@@ -1,6 +1,5 @@
 package org.brandonhaynes.pipegen.utilities;
 
-import com.google.common.base.Joiner;
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.Task;
@@ -18,21 +17,22 @@ public class DataPipeTasks {
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
         create(configuration.importTask);
-        create(configuration.exportTask);
+        //create(configuration.exportTask);
     }
 
     public static void create(Task task) throws IOException, InterruptedException, MonitorException {
-        DataPipeTasks.build(task.getConfiguration());
+        // TODO shouldn't continue when one step fails...
+        //DataPipeTasks.build(task.getConfiguration());
         DataPipeTasks.instrument(task);
         DataPipeTasks.verifyExistingFunctionality(task);
         DataPipeTasks.verifyDataPipeFunctionality(task);
+        log.info("Done");
     }
 
     public static boolean build(CompileTimeConfiguration configuration) throws IOException, InterruptedException {
         log.info(String.format("Building %s (%s)", configuration.getSystemName(), configuration.datapipeConfiguration.getBuildScript()));
 
-        ProcessBuilder builder = getBuilder(configuration.datapipeConfiguration.getBuildScript(), configuration);
-        Process process = builder.start();
+        Process process = configuration.datapipeConfiguration.getBuildScript().getProcessBuilder().start();
         process.waitFor();
 
         log.info(String.format("Build %s (%d)", process.exitValue() == 0 ? "complete" : "failed", process.exitValue()));
@@ -51,8 +51,7 @@ public class DataPipeTasks {
     public static Process test(Task task) throws IOException {
         log.info(String.format("Testing %s (%s)", task.getConfiguration().getSystemName(), task.getTaskScript()));
 
-        ProcessBuilder builder = getBuilder(task.getTaskScript(), task);
-        return builder.start();
+        return task.getTaskScript().getProcessBuilder().start();
     }
 
     public static boolean verifyExistingFunctionality(Task task) throws IOException, InterruptedException {
@@ -80,34 +79,12 @@ public class DataPipeTasks {
         log.info(String.format("Verifying %s (%s)", configuration.getSystemName(),
                 isVerifyingExistingFunctionality ? "existing functionality" : "datapipe functionality"));
 
-        ProcessBuilder builder = getBuilder(configuration.datapipeConfiguration.getVerifyScript(), configuration);
+        ProcessBuilder builder = configuration.datapipeConfiguration.getVerifyScript().getProcessBuilder();
         RuntimeConfiguration.setProcessVerificationMode(builder, !isVerifyingExistingFunctionality);
         Process process = builder.start();
         process.waitFor();
 
         log.info(String.format("Verification %s (%d)", process.exitValue() == 0 ? "complete" : "failed", process.exitValue()));
         return process.exitValue();
-    }
-
-    private static ProcessBuilder getBuilder(String script, Task task) {
-        return getBuilder(script, task.getConfiguration());
-    }
-
-    private static ProcessBuilder getBuilder(String script, CompileTimeConfiguration configuration) {
-        ProcessBuilder builder = new ProcessBuilder("bash", "-c", Joiner.on("&&").join(script.split("\n")));
-        builder.directory(configuration.getBasePath().toFile());
-        return redirectIo(builder, configuration);
-    }
-
-    private static ProcessBuilder redirectIo(ProcessBuilder builder, CompileTimeConfiguration configuration) {
-        return redirectIo(builder, configuration.datapipeConfiguration.isDebug());
-    }
-
-    private static ProcessBuilder redirectIo(ProcessBuilder builder, boolean isDebug) {
-        if(isDebug) {
-            builder.redirectErrorStream(true);
-            builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-        }
-        return builder;
     }
 }

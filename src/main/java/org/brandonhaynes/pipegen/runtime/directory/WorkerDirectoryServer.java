@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 public class WorkerDirectoryServer {
     private static final Logger log = Logger.getLogger(WorkerDirectoryServer.class.getName());
 
+    private final HttpServer server;
+
     public static void main(String[] args) throws IOException {
         if(args.length != 1 || (!args[0].equals("production") && !args[0].equals("verification")))
             System.out.println(String.format("%s: [production|verification]\n", WorkerDirectoryServer.class.getName()));
@@ -28,8 +30,6 @@ public class WorkerDirectoryServer {
         else
             start(new VerificationWorkerDirectory(), RuntimeConfiguration.getInstance().getWorkerDirectoryUri().getPort());
     }
-
-    private final HttpServer server;
 
     private WorkerDirectoryServer(HttpServer server, Path logPropertiesFile) throws IOException {
         this(server);

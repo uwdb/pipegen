@@ -41,8 +41,6 @@ public class SaveTraceRule implements Rule {
             for(int index = 0; index < trace.getRoot().size(); index++)
                 writer.write(trace.getRoot().get(index).toString() + (index < trace.getRoot().size() - 1 ? ",\n" : "\n"));
             writer.write("]");
-           //writer.write(new ObjectMapper().defaultPrettyPrintingWriter().defaultPrettyPrintingWriter().writeValueAsString(trace.getRoot().toString()));
-            //writer.write(trace.getRoot().toString());
             return false;
         }
     }

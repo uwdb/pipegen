@@ -1,6 +1,5 @@
 package org.brandonhaynes.pipegen.configuration;
 
-import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,7 +20,7 @@ public class RuntimeConfiguration {
 
     private RuntimeConfiguration(Path configurationFile) {
         // TODO
-        this.filenamePattern = Pattern.compile(isInVerificationMode() ? "(?<name>.+)" : "dbms://(?<name>.+)");
+        this.filenamePattern = Pattern.compile(isInVerificationMode() ? "(?<name>.+)" : "__dbms__(?<name>.+)");
         this.workerDirectoryUri = URI.create("http://localhost:8888");
     }
 

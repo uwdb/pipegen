@@ -16,7 +16,8 @@ datapipe:
   build:  ./gradlew -Dtest.single=FileScanTest clean jar
   import: ./gradlew -Dtest.single=FileScanTest test
   export: ./gradlew -Dtest.single=DataSinkTest cleanTest test
-  verify: "unzip -o build/libs/myria-0.1.jar -d build/main | grep brandonhaynes
-           ./gradlew -Dtest.single=FileScanTest -x compileJava cleanTest test
-           ./gradlew -Dtest.single=DataSinkTest -x compileJava cleanTest test"
+  verify:
+    - unzip -o build/libs/myria-0.1.jar -d build/main | grep brandonhaynes
+    - ./gradlew -Dtest.single=FileScanTest -x compileJava cleanTest test
+    - ./gradlew -Dtest.single=DataSinkTest -x compileJava cleanTest test
   debug: true

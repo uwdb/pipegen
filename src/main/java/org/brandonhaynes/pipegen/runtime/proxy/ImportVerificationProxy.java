@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.runtime.proxy;
 
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
+import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectory;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 
@@ -10,6 +11,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -61,7 +64,9 @@ public class ImportVerificationProxy implements VerificationProxy, Runnable {
                 new InterceptMetadata(entry.getSystemName()).write(stream);
 
                 log.info(String.format("Sending %s to importer", entry.getSystemName()));
-                try(InputStream input = new FileInputStream(Paths.get(basePath.toString(), entry.getSystemName()).toString())) {
+
+                try(InputStream input = new FileInputStream(Paths.get(basePath.toString()).resolve(getImportPath(entry)).toFile())) {
+                //try(InputStream input = new FileInputStream(Paths.get(basePath.toString(), getImportPath(entry)).toString())) {
                     int bytesRead;
                     byte[] buffer = new byte[4096];
 
@@ -69,6 +74,18 @@ public class ImportVerificationProxy implements VerificationProxy, Runnable {
                         stream.write(buffer, 0, bytesRead);
                 }
             }
+        }
+    }
+
+    private String getImportPath(WorkerDirectoryEntry entry) {
+        try {
+            URI uri = new URI(entry.getSystemName());
+            if (uri.getScheme() == null || uri.getScheme().equals("file"))
+                return uri.getPath();
+            else
+                throw new RuntimeException("Scheme not supported: " + uri.getScheme());
+        } catch(URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 }

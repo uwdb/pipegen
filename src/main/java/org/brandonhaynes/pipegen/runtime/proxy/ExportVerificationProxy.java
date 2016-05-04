@@ -5,9 +5,7 @@ import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -70,6 +68,7 @@ public class ExportVerificationProxy implements VerificationProxy, Runnable {
                 InterceptMetadata metadata = InterceptMetadata.read(stream);
                 log.info(String.format("Receiving %s from exporter", metadata.filename));
 
+                basePath.resolve(Paths.get(metadata.filename)).getParent().toFile().mkdirs();
                 try(OutputStream output = new FileOutputStream(basePath.resolve(Paths.get(metadata.filename)).toFile())) {
                     int bytesRead;
                     byte[] buffer = new byte[4096];

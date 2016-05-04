@@ -1,13 +1,16 @@
 name: Spark
-version: 52
+version: 50
 path: /home/bhaynes/research/spark/
 classPaths:
-  - core/target/*
-  - build/scala-2.11.7/lib/*
-  - external/mqtt/target/scala-2.11/*
+  - assembly/target/scala-2.11/*
+  #- core/target/*
+  #- build/scala-2.11.7/lib/*
+  #- external/mqtt/target/scala-2.11/*
+  #- assembly/target/scala-2.11/*
+  - recurse:jars/*
 instrumentation:
   port: 7781
-  timeout: 360
+  timeout: 2400
   trace: $DIR/templates/ImportTracer.java
   agent: $DIR/lib/btrace-agent.jar
   logs: /tmp
@@ -16,9 +19,15 @@ instrumentation:
   debug: false
 datapipe:
   #build:  build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests package
-  build:  build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests install
-  #import: build/mvn test -DwildcartSuites=org.apache.spark.FileSuite -Dtest=none
-  import: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none surefire:test
-  export: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none surefire:test
-  verify: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none surefire:test
+  build:
+    - cp pom.compile.xml pom.xml
+    - /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests install -Dmaven.repo.local=/home/bhaynes/research/spark/jars
+  import: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars
+  export: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars
+  verify:
+    #- sed -i "s/<goal>compile<\\/goal>/<!--<goal>compile<\\/goal>-->/1" pom.xml
+    - cp pom.nocompile.xml pom.xml
+    - ./build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars
+    - cp pom.compile.xml pom.xml
+    #- sed -i "s/<!--<goal>compile<\\/goal>-->/<goal>compile<\\/goal>/1" pom.xml
   debug: true

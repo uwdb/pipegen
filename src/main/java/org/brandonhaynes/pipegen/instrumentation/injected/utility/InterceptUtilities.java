@@ -1,9 +1,7 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.utility;
 
-import org.apache.commons.lang.SerializationUtils;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 
-import java.io.*;
 import java.util.regex.Matcher;
 
 public class InterceptUtilities {
@@ -13,5 +11,4 @@ public class InterceptUtilities {
             throw new IllegalArgumentException(String.format("Could not identify system name in filename %s", filename));
         return matcher.group("name");
     }
-
 }

@@ -22,6 +22,7 @@ public class FileInputStreamRule implements Rule {
     private static final Class sourceClass = FileInputStream.class;
     private static final Class targetClass = InterceptedFileInputStream.class;
     private static final String template = String.format("$_ = %s.intercept($$);", targetClass.getName());
+    private static final String targetExpression = ".*";
 
     private final ImportTask task;
 
@@ -59,7 +60,7 @@ public class FileInputStreamRule implements Rule {
     private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
         ExpressionReplacer.replaceExpression(
                 frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
-                template, task.getConfiguration().getClassPool());
+                targetExpression, template, task.getConfiguration().getClassPool());
         JarUpdater.replaceClasses(task.getConfiguration().getClassPool().find(frame.getClassName()),
                                   task.getConfiguration().getClassPool(),
                                   InterceptedFileInputStream.getDependencies(),

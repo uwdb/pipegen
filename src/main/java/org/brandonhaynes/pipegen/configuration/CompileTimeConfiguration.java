@@ -4,8 +4,10 @@ import com.fasterxml.jackson.dataformat.yaml.snakeyaml.Yaml;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import javassist.ClassPath;
 import javassist.ClassPool;
 import javassist.NotFoundException;
+import org.apache.commons.io.FileUtils;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.mutation.rules.ExportRule;
 import org.brandonhaynes.pipegen.mutation.rules.ImportRule;
@@ -15,23 +17,26 @@ import org.brandonhaynes.pipegen.runtime.proxy.ImportVerificationProxy;
 import org.brandonhaynes.pipegen.runtime.proxy.VerificationProxy;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CompileTimeConfiguration {
     private final String name;
     private final Path configurationFile;
     private final Version version;
     private final Path basePath;
-    private final Collection<Path> classPaths;
+    private final Collection<ClassPath> classPaths = Lists.newArrayList();
 
     public final InstrumentationConfiguration instrumentationConfiguration;
     public final DataPipeConfiguration datapipeConfiguration;
     public final ImportTask importTask;
     public final ExportTask exportTask;
+    private final ClassPool pool;
 
     public CompileTimeConfiguration(String filename) throws IOException {
         this(Paths.get(filename));
@@ -44,28 +49,35 @@ public class CompileTimeConfiguration {
         name = yaml.get("name").toString();
         version = new Version(Integer.parseInt(yaml.get("version").toString()), 0);
         basePath = Paths.get(yaml.get("path").toString());
-        classPaths = Collections.unmodifiableCollection(getClassPaths(getChild(yaml, "classPaths", List.class)));
 
         instrumentationConfiguration = new InstrumentationConfiguration(getChild(yaml, "instrumentation", Map.class));
         datapipeConfiguration = new DataPipeConfiguration(getChild(yaml, "datapipe", Map.class));
         importTask = new ImportTask(this);
         exportTask = new ExportTask(this);
+
+        try {
+            pool = new ClassPool(false); // ClassPool.getDefault();
+            pool.appendSystemPath();
+            for(Path path: getClassPaths(getChild(yaml, "classPaths", List.class)))
+                classPaths.add(pool.insertClassPath(path.toString()));
+        } catch(NotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getSystemName() { return name; }
-    public Collection<Path> getClassPaths() { return classPaths; }
     public Version getVersion() { return version; }
     public Path getBasePath() { return basePath; }
 
     public ClassPool getClassPool() {
-        try {
-            ClassPool pool = ClassPool.getDefault();
-            for(Path path: classPaths)
-                pool.insertClassPath(path.toString());
-            return pool;
-        } catch(NotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        return pool;
+    }
+
+    public Iterable<URL> findClasses(String className) {
+        return classPaths.stream()
+                         .map(path -> path.find(className))
+                         .filter(url -> url != null)
+                         .collect(Collectors.toList());
     }
 
     private static <T> T getElement(Object yaml, Class<T> clazz) throws IOException {
@@ -86,8 +98,18 @@ public class CompileTimeConfiguration {
     private Collection<Path> getClassPaths(List yaml) {
         Collection<Path> paths = Lists.newArrayList();
         for(Object path: yaml)
-            paths.add(Paths.get(makeAbsolutePath(path).toString()));
+            if(path.toString().startsWith("recurse:"))
+                paths.addAll(getJarsRecursively(makeAbsolutePath(path.toString().substring("recurse:".length()).replace("*", ""))));
+            else
+                paths.add(Paths.get(makeAbsolutePath(path).toString()));
         return paths;
+    }
+
+    private Collection<Path> getJarsRecursively(Path path) {
+        return Lists.newArrayList(FileUtils.iterateFiles(path.toFile(), new String[] {"jar"}, true))
+                    .stream()
+                    .map(f -> f.toPath())
+                    .collect(Collectors.toList());
     }
 
     private Path makeAbsolutePath(Object path) {
@@ -143,23 +165,24 @@ public class CompileTimeConfiguration {
     }
 
     public class DataPipeConfiguration {
-        private final String buildScript;
-        private final String verifyScript;
-        private final String importScript;
-        private final String exportScript;
+        private final Script buildScript;
+        private final Script verifyScript;
+        private final Script importScript;
+        private final Script exportScript;
         private final Path logPropertiesPath;
         private final boolean debug;
 
         DataPipeConfiguration(Map yaml) {
-            this(yaml.get("build").toString(),
-                    yaml.get("verify").toString(),
-                    yaml.get("import").toString(),
-                    yaml.get("export").toString(),
+            this(getScript(yaml.get("build")),
+                    getScript(yaml.get("verify")),
+                    getScript(yaml.get("import")),
+                    getScript(yaml.get("export")),
                     makeAbsolutePath(yaml.get("logProperties")),
                     Boolean.parseBoolean(yaml.get("debug").toString()));
         }
 
-        DataPipeConfiguration(String buildScript, String verifyScript, String importScript, String exportScript,
+        DataPipeConfiguration(Script buildScript, Script verifyScript,
+                              Script importScript, Script exportScript,
                               Path logPropertiesPath, boolean debug) {
             this.buildScript = buildScript;
             this.verifyScript = verifyScript;
@@ -169,27 +192,27 @@ public class CompileTimeConfiguration {
             this.debug = debug;
         }
 
-        public String getBuildScript() { return buildScript; }
-        public String getVerifyScript() { return verifyScript; }
+        public Script getBuildScript() { return buildScript; }
+        public Script getVerifyScript() { return verifyScript; }
         public Path getLogPropertiesPath() { return logPropertiesPath; }
         public boolean isDebug() { return debug; }
-        String getImportScript() { return importScript; }
-        String getExportScript() { return exportScript; }
+        Script getImportScript() { return importScript; }
+        Script getExportScript() { return exportScript; }
     }
 
 
     private static abstract class Task implements org.brandonhaynes.pipegen.configuration.Task {
         private final CompileTimeConfiguration configuration;
-        private final String script;
+        private final Script script;
         private final Set<StackFrame> modifiedCallSites = Sets.newHashSet();
 
-        private Task(CompileTimeConfiguration configuration, String script) {
+        private Task(CompileTimeConfiguration configuration, Script script) {
             this.configuration = configuration;
             this.script = script;
         }
 
         public CompileTimeConfiguration getConfiguration() { return configuration; }
-        public String getTaskScript() { return script; }
+        public Script getTaskScript() { return script; }
         public Set<StackFrame> getModifiedCallSites() { return modifiedCallSites; }
     }
 
@@ -202,7 +225,7 @@ public class CompileTimeConfiguration {
             proxy = new ImportVerificationProxy(configuration.getBasePath());
             rule = new ImportRule(this);
         }
-        public String getImportScript() { return getTaskScript(); }
+        public Script getImportScript() { return getTaskScript(); }
         public VerificationProxy getVerificationProxy() { return proxy; }
         public Rule getRule() { return rule; }
         }
@@ -217,8 +240,14 @@ public class CompileTimeConfiguration {
             rule = new ExportRule(this);
         }
 
-        public String getExportScript() { return getTaskScript(); }
+        public Script getExportScript() { return getTaskScript(); }
         public VerificationProxy getVerificationProxy() { return proxy; }
         public Rule getRule() { return rule; }
+    }
+
+    private Script getScript(Object value) {
+        return new Script(this, value instanceof String
+            ? Lists.newArrayList(value.toString())
+            : ((List<?>)value).stream().map(Object::toString).collect(Collectors.toList()));
     }
 }

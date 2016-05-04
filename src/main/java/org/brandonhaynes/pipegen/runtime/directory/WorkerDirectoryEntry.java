@@ -1,5 +1,6 @@
 package org.brandonhaynes.pipegen.runtime.directory;
 
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 

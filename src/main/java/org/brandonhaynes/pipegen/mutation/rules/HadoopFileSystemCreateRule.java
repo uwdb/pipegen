@@ -8,10 +8,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.brandonhaynes.pipegen.configuration.ImportTask;
+import org.brandonhaynes.pipegen.configuration.ExportTask;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
-import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemImport;
+import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemExport;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
 import org.brandonhaynes.pipegen.utilities.JarUpdater;
 
@@ -20,19 +20,19 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-public class HadoopFileSystemOpenRule implements Rule {
-    private static final Logger log = Logger.getLogger(HadoopFileSystemOpenRule.class.getName());
+public class HadoopFileSystemCreateRule implements Rule {
+    private static final Logger log = Logger.getLogger(HadoopFileSystemCreateRule.class.getName());
 
     private static final Collection<String> sourceClasses = Lists.newArrayList(
             FileSystem.class.getName(), LocalFileSystem.class.getName(),
             DistributedFileSystem.class.getName(), RawLocalFileSystem.class.getName());
-    private static final Class targetClass = InterceptedFileSystemImport.class;
+    private static final Class targetClass = InterceptedFileSystemExport.class;
     private static final String template = String.format("$_ = %s.intercept($0, $$);", targetClass.getName());
-    private static final String targetExpression = "open";
+    private static final String targetExpression = "create";
 
-    private final ImportTask task;
+    private final ExportTask task;
 
-    public HadoopFileSystemOpenRule(ImportTask task) {
+    public HadoopFileSystemCreateRule(ExportTask task) {
         this.task = task;
     }
 
@@ -63,20 +63,20 @@ public class HadoopFileSystemOpenRule implements Rule {
     }
 
     private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
-        for(URL url: task.getConfiguration().findClasses(frame.getClassName())) {
+        for (URL url : task.getConfiguration().findClasses(frame.getClassName())) {
+            log.info(String.format("Modifying call sites in %s", url));
             JarUpdater.replaceClasses(
                     url,
                     task.getConfiguration().getClassPool(),
-                    InterceptedFileSystemImport.getDependencies(),
+                    InterceptedFileSystemExport.getDependencies(),
                     task.getConfiguration().getVersion());
+
             ExpressionReplacer.replaceExpression(
-                    frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
-                    targetExpression, template, task.getConfiguration().getClassPool());
+                    url, frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
+                    targetExpression, template);
         }
 
         task.getModifiedCallSites().add(frame);
-        log.info(String.format("Injected data pipe at %s (%s)", frame.getStackFrame(),
-                task.getConfiguration().getClassPool().find(frame.getClassName())));
         return true;
     }
 

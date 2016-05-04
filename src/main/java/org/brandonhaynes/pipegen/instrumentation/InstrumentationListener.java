@@ -1,5 +1,6 @@
 package org.brandonhaynes.pipegen.instrumentation;
 
+import com.google.common.collect.Lists;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 import org.brandonhaynes.pipegen.configuration.Task;
@@ -13,8 +14,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
-//import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedDistributedFileSystem;
-
 public class InstrumentationListener extends HostListener {
     public InstrumentationListener(Task task) throws MonitorException {
         this(task.getTaskScript().toString(),
@@ -22,7 +21,7 @@ public class InstrumentationListener extends HostListener {
                 task.getConfiguration().instrumentationConfiguration.getClassPattern(),
                 task.getConfiguration().instrumentationConfiguration.getCommandPattern(),
                 task.getConfiguration().instrumentationConfiguration.getTraceFile(),
-                task.getConfiguration().getClassPaths(),
+                Lists.newArrayList(),
                 task.getConfiguration().instrumentationConfiguration.getAgentFile(),
                 task.getConfiguration().instrumentationConfiguration.getTimeout(),
                 task.getConfiguration().instrumentationConfiguration.isDebug(),
