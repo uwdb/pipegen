@@ -2,6 +2,7 @@ package org.brandonhaynes.pipegen.utilities;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -44,35 +45,36 @@ public class JarUpdater {
     public static void replaceClasses(final URL jarUrl, final ClassPool pool, final Collection<Class> classes,
                                          final Version version)
             throws CannotCompileException, IOException, NotFoundException {
+        Collection<CompiledClass> compiledClasses = Lists.newArrayList();
         for(Class clazz: classes)
-            replaceClass(new JarFile(((JarURLConnection)jarUrl.openConnection()).getJarFileURL().getFile()),
-                         pool.get(clazz.getName()), version);
+            compiledClasses.add(new CompiledClass(pool.get(clazz.getName()), version));
+        replaceFiles(new JarFile(((JarURLConnection)jarUrl.openConnection()).getJarFileURL().getFile()),
+                     compiledClasses);
     }
 
     public static void replaceClasses(final URL jarUrl, final Version version, final CtClass... ccs)
             throws CannotCompileException, IOException {
+        Collection<CompiledClass> classes = Lists.newArrayList();
         for(CtClass cc: ccs)
-            replaceClass(new JarFile(((JarURLConnection)jarUrl.openConnection()).getJarFileURL().getFile()),
-                         cc, version);
+            classes.add(new CompiledClass(cc, version));
+        replaceFiles(new JarFile(((JarURLConnection)jarUrl.openConnection()).getJarFileURL().getFile()),
+                     classes);
     }
 
     public static void replaceClass(final JarFile jar, final CtClass cc, final Version version)
             throws CannotCompileException, IOException {
-        String temporaryDirectory = System.getProperty("java.io.tmpdir");
-        cc.defrost();
-        cc.getClassFile().setMajorVersion(version.getMajor());
-        cc.writeFile(temporaryDirectory);
-        replaceFile(jar, toClassPath(cc), cc.toBytecode());
+        replaceFiles(jar, Lists.newArrayList(new CompiledClass(cc, version)));
     }
 
     public static void addFile(final JarFile jar, final File classFile, final byte[] fileBytecode) throws IOException {
-        if(Iterables.any(getEntryIterator(jar), entry -> isMatchingEntry(entry, classFile)))
+        Collection<CompiledClass> classes = Lists.newArrayList(new CompiledClass(classFile, fileBytecode));
+        if(Iterables.any(getEntryIterator(jar), entry -> isMatchingEntry(entry, classes)))
             throw new IOException("Specified file already exists in the jar.");
 
-        replaceFile(jar, classFile, fileBytecode);
+        replaceFiles(jar, classes);
     }
 
-    public static void replaceFile(final JarFile jar, final File classFile, final byte[] fileBytecode) throws IOException {
+    private static void replaceFiles(final JarFile jar, final Collection<CompiledClass> classes) throws IOException {
         File jarFile = new File(jar.getName());
         File stagingJarFile = File.createTempFile(jar.getName(), null);
         byte[] buffer = new byte[4096];
@@ -80,11 +82,13 @@ public class JarUpdater {
 
         try(FileOutputStream jarStream = new FileOutputStream(stagingJarFile)) {
             try(JarOutputStream stagingJar = new JarOutputStream(jarStream)) {
-                stagingJar.putNextEntry(new JarEntry(classFile.getPath()));
-                stagingJar.write(fileBytecode);
+                for(CompiledClass compiledClass: classes) {
+                    stagingJar.putNextEntry(new JarEntry(compiledClass.getClassFile().getPath()));
+                    stagingJar.write(compiledClass.getBytecode());
+                }
 
                 for (JarEntry entry : getEntryIterator(jar)) {
-                    if (!isMatchingEntry(entry, classFile))
+                    if (!isMatchingEntry(entry, classes))
                         try (InputStream stream = jar.getInputStream(entry)) {
                             stagingJar.putNextEntry(entry);
 
@@ -107,8 +111,9 @@ public class JarUpdater {
         return () -> Iterators.forEnumeration(jar.entries());
     }
 
-    private static boolean isMatchingEntry(final JarEntry entry, final File classFile) {
-        return entry.getName().equals(classFile.getPath());
+    private static boolean isMatchingEntry(final JarEntry entry, final Collection<CompiledClass> classes) {
+        return classes.stream().anyMatch(c -> entry.getName().equals(c.getClassFile().getPath()));
+        //return entry.getName().equals(classFile.getPath());
     }
 
     private static void waitForCompletion() {
@@ -117,5 +122,28 @@ public class JarUpdater {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static class CompiledClass {
+        private final File classFile;
+        private final byte[] bytecode;
+
+        CompiledClass(CtClass cc, Version version) throws CannotCompileException, IOException {
+            String temporaryDirectory = System.getProperty("java.io.tmpdir");
+            cc.defrost();
+            cc.getClassFile().setMajorVersion(version.getMajor());
+            cc.writeFile(temporaryDirectory);
+
+            this.classFile = toClassPath(cc);
+            this.bytecode = cc.toBytecode();
+        }
+
+        CompiledClass(File classFile, byte[] bytecode) {
+            this.classFile = classFile;
+            this.bytecode = bytecode;
+        }
+
+        File getClassFile() { return classFile; }
+        byte[] getBytecode() { return bytecode; }
     }
 }
