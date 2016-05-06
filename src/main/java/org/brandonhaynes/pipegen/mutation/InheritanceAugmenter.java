@@ -71,7 +71,7 @@ public class InheritanceAugmenter {
 
     private static void injectClass(JarFile jar, CtClass clazz)
             throws IOException, CannotCompileException {
-        JarUpdater.replaceFile(jar, toClassPath(clazz), clazz.toBytecode());
+        JarUpdater.replaceClass(jar, toClassPath(clazz), clazz.toBytecode());
     }
 
     private static File toClassPath(CtClass cc) {

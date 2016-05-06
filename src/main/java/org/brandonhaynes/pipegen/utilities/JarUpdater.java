@@ -34,36 +34,41 @@ public class JarUpdater {
     public static void replaceClass(final URL jarUrl, final CtClass cc)
             throws CannotCompileException, IOException {
         replaceClass(jarUrl, cc, new Version(cc.getClassFile2().getMajorVersion(),
-                                             cc.getClassFile2().getMinorVersion()));
+                cc.getClassFile2().getMinorVersion()));
     }
 
     public static void replaceClass(final URL jarUrl, final CtClass cc, final Version version)
             throws CannotCompileException, IOException {
-        replaceClass(new JarFile(((JarURLConnection)jarUrl.openConnection()).getJarFileURL().getFile()), cc, version);
+        replaceClass(new JarFile(((JarURLConnection) jarUrl.openConnection()).getJarFileURL().getFile()), cc, version);
     }
 
     public static void replaceClasses(final URL jarUrl, final ClassPool pool, final Collection<Class> classes,
-                                         final Version version)
+                                      final Version version)
             throws CannotCompileException, IOException, NotFoundException {
         Collection<CompiledClass> compiledClasses = Lists.newArrayList();
-        for(Class clazz: classes)
+        for (Class clazz : classes)
             compiledClasses.add(new CompiledClass(pool.get(clazz.getName()), version));
-        replaceFiles(new JarFile(((JarURLConnection)jarUrl.openConnection()).getJarFileURL().getFile()),
-                     compiledClasses);
+        replaceFiles(new JarFile(((JarURLConnection) jarUrl.openConnection()).getJarFileURL().getFile()),
+                compiledClasses);
     }
 
     public static void replaceClasses(final URL jarUrl, final Version version, final CtClass... ccs)
             throws CannotCompileException, IOException {
         Collection<CompiledClass> classes = Lists.newArrayList();
-        for(CtClass cc: ccs)
+        for (CtClass cc : ccs)
             classes.add(new CompiledClass(cc, version));
-        replaceFiles(new JarFile(((JarURLConnection)jarUrl.openConnection()).getJarFileURL().getFile()),
-                     classes);
+        replaceFiles(new JarFile(((JarURLConnection) jarUrl.openConnection()).getJarFileURL().getFile()),
+                classes);
     }
 
     public static void replaceClass(final JarFile jar, final CtClass cc, final Version version)
             throws CannotCompileException, IOException {
         replaceFiles(jar, Lists.newArrayList(new CompiledClass(cc, version)));
+    }
+
+    public static void replaceClass(final JarFile jar, final File classFile, byte[] bytecode)
+            throws CannotCompileException, IOException {
+        replaceFiles(jar, Lists.newArrayList(new CompiledClass(classFile, bytecode)));
     }
 
     public static void addFile(final JarFile jar, final File classFile, final byte[] fileBytecode) throws IOException {
