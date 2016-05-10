@@ -9,8 +9,13 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.injected.java.String {
+//public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.injected.java.String {
     private String decoratedString = null;
     private Object[] state;
+
+    public static AugmentedString decorate(Object o) {
+        return new AugmentedString(o);
+    }
 
     public AugmentedString() {
         this.state = new Object[0];
@@ -18,6 +23,11 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
 
     public AugmentedString(String var1) {
         decoratedString = var1;
+    }
+
+    public AugmentedString(Object o) {
+        this.state = new Object[1];
+        this.state[0] = o;
     }
 
     public AugmentedString(Object[] state) {

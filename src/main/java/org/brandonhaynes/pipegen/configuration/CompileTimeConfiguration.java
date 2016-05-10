@@ -30,13 +30,15 @@ public class CompileTimeConfiguration {
     private final Path configurationFile;
     private final Version version;
     private final Path basePath;
-    private final Collection<ClassPath> classPaths = Lists.newArrayList();
+    private final Collection<Path> classPaths;
+    private final Collection<Path> excludeClassPaths;
+    private final Collection<ClassPath> classPoolPaths = Lists.newArrayList();
+    private final ClassPool pool;
 
     public final InstrumentationConfiguration instrumentationConfiguration;
     public final DataPipeConfiguration datapipeConfiguration;
     public final ImportTask importTask;
     public final ExportTask exportTask;
-    private final ClassPool pool;
 
     public CompileTimeConfiguration(String filename) throws IOException {
         this(Paths.get(filename));
@@ -49,6 +51,8 @@ public class CompileTimeConfiguration {
         name = yaml.get("name").toString();
         version = new Version(Integer.parseInt(yaml.get("version").toString()), 0);
         basePath = Paths.get(yaml.get("path").toString());
+        classPaths = getClassPaths(getChild(yaml, "classPaths", List.class));
+        excludeClassPaths = getClassPaths(getChild(getChild(yaml, "optimization", Map.class), "excludeClassPaths", List.class));
 
         instrumentationConfiguration = new InstrumentationConfiguration(getChild(yaml, "instrumentation", Map.class));
         datapipeConfiguration = new DataPipeConfiguration(getChild(yaml, "datapipe", Map.class));
@@ -58,8 +62,9 @@ public class CompileTimeConfiguration {
         try {
             pool = new ClassPool(false); // ClassPool.getDefault();
             pool.appendSystemPath();
-            for(Path path: getClassPaths(getChild(yaml, "classPaths", List.class)))
-                classPaths.add(pool.insertClassPath(path.toString()));
+            for(Path path: classPaths) {
+                classPoolPaths.add(pool.insertClassPath(path.toString()));
+            }
         } catch(NotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -72,9 +77,15 @@ public class CompileTimeConfiguration {
     public ClassPool getClassPool() {
         return pool;
     }
+    public Collection<Path> getClassPaths() {
+        return classPaths;
+    }
+    public Collection<Path> getExcludeClassPaths() {
+        return excludeClassPaths;
+    }
 
     public Iterable<URL> findClasses(String className) {
-        return classPaths.stream()
+        return classPoolPaths.stream()
                          .map(path -> path.find(className))
                          .filter(url -> url != null)
                          .collect(Collectors.toList());

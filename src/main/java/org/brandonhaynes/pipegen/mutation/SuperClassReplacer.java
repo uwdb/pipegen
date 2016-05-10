@@ -1,18 +1,40 @@
 package org.brandonhaynes.pipegen.mutation;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.util.jar.JarFile;
-
-import javassist.CtClass;
-import javassist.ClassPool;
 import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
 import javassist.NotFoundException;
+import org.brandonhaynes.pipegen.configuration.Version;
+import org.brandonhaynes.pipegen.utilities.JarClassPath;
 import org.brandonhaynes.pipegen.utilities.JarUpdater;
 
-public class InheritanceAugmenter {
+import java.io.IOException;
+import java.net.URL;
+
+public class SuperClassReplacer {
+    public static void setSuperClass(URL classLocation, URL superClassLocation, String className, String superClassName)
+            throws IOException, NotFoundException, CannotCompileException {
+        ClassPool pool = new ClassPool(false);
+        pool.appendSystemPath();
+        pool.insertClassPath(new JarClassPath(classLocation));
+        pool.insertClassPath(new JarClassPath(superClassLocation));
+        setSuperClass(pool, className, superClassName);
+    }
+
+    public static void setSuperClass(ClassPool pool, String className, String superClassName)
+            throws IOException, NotFoundException, CannotCompileException {
+        setSuperClass(pool.find(className), pool.get(className), pool.get(superClassName));
+    }
+
+    public static void setSuperClass(URL jarLocation, CtClass cc, CtClass superClass)
+            throws IOException, NotFoundException, CannotCompileException {
+        cc.defrost();
+        cc.setSuperclass(superClass);
+        JarUpdater.replaceClass(jarLocation, cc,
+                new Version(cc.getClassFile2().getMajorVersion(), cc.getClassFile2().getMinorVersion()));
+    }
+
+/*
     public static void interceptInherited(String interceptedClassName, Class newSuperClass, File[] classPaths)
             throws IOException, NotFoundException, CannotCompileException {
         ClassPool pool = ClassPool.getDefault();
@@ -77,4 +99,5 @@ public class InheritanceAugmenter {
     private static File toClassPath(CtClass cc) {
         return new File(cc.getName().replace(".", File.separator) + ".class");
     }
+        */
 }

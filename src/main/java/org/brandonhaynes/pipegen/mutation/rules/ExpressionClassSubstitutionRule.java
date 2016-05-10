@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
-import org.brandonhaynes.pipegen.mutation.InheritanceAugmenter;
 
 import java.io.File;
 import java.io.IOException;

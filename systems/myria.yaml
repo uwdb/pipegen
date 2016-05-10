@@ -12,6 +12,15 @@ instrumentation:
   commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
   classes: .*GradleWorkerMain
   debug: false
+optimization:
+  excludeClassPaths:
+    - build/libs/scala*.jar
+    - build/libs/commons-beanutils*.jar
+    - build/libs/jetty*.jar
+    - build/libs/a*.jar
+    - build/libs/j*.jar
+    - build/libs/s*.jar
+    - build/libs/x*.jar
 datapipe:
   build:  ./gradlew -Dtest.single=FileScanTest clean jar
   import: ./gradlew -Dtest.single=FileScanTest test

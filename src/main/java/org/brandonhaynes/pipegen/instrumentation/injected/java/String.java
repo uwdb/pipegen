@@ -5,7 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
-public class String implements Serializable, Comparable<java.lang.String>, CharSequence {
+public class String extends java.lang.String implements Serializable, Comparable<java.lang.String>, CharSequence {
     private static java.lang.String collapse() { return ""; }
 
     public int length() { return collapse().length(); }
