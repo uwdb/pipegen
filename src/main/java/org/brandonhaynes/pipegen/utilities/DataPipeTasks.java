@@ -21,23 +21,11 @@ public class DataPipeTasks {
     }
 
     public static void create(Task task) throws IOException, InterruptedException, MonitorException {
-        // TODO shouldn't continue when one step fails...
-        //DataPipeTasks.build(task.getConfiguration());
         if(!DataPipeTasks.instrument(task) ||
            !DataPipeTasks.verifyExistingFunctionality(task) ||
            !DataPipeTasks.verifyDataPipeFunctionality(task))
             DataPipeTasks.rollback(task.getConfiguration());
         log.info("Done");
-    }
-
-    public static boolean build(CompileTimeConfiguration configuration) throws IOException, InterruptedException {
-        log.info(String.format("Building %s (%s)", configuration.getSystemName(), configuration.datapipeConfiguration.getBuildScript()));
-
-        Process process = configuration.datapipeConfiguration.getBuildScript().getProcessBuilder().start();
-        process.waitFor();
-
-        log.info(String.format("Build %s (%d)", process.exitValue() == 0 ? "complete" : "failed", process.exitValue()));
-        return process.exitValue() == 0;
     }
 
     private static boolean instrument(Task task)

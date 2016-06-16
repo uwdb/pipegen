@@ -177,7 +177,6 @@ public class CompileTimeConfiguration {
     }
 
     public class DataPipeConfiguration {
-        private final Script buildScript; //TODO deprecate this
         private final Script verifyScript;
         private final Script importScript;
         private final Script exportScript;
@@ -185,18 +184,16 @@ public class CompileTimeConfiguration {
         private final boolean debug;
 
         DataPipeConfiguration(Map yaml) {
-            this(getScript(yaml.get("build")),
-                    getScript(yaml.get("verify")),
+            this(getScript(yaml.get("verify")),
                     getScript(yaml.get("import")),
                     getScript(yaml.get("export")),
                     makeAbsolutePath(yaml.get("logProperties")),
                     Boolean.parseBoolean(yaml.get("debug").toString()));
         }
 
-        DataPipeConfiguration(Script buildScript, Script verifyScript,
+        DataPipeConfiguration(Script verifyScript,
                               Script importScript, Script exportScript,
                               Path logPropertiesPath, boolean debug) {
-            this.buildScript = buildScript;
             this.verifyScript = verifyScript;
             this.importScript = importScript;
             this.exportScript = exportScript;
@@ -204,7 +201,6 @@ public class CompileTimeConfiguration {
             this.debug = debug;
         }
 
-        public Script getBuildScript() { return buildScript; }
         public Script getVerifyScript() { return verifyScript; }
         public Path getLogPropertiesPath() { return logPropertiesPath; }
         public boolean isDebug() { return debug; }
