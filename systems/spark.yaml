@@ -1,6 +1,7 @@
 name: Spark
 version: 50
 path: /home/bhaynes/research/spark/
+backupPath: /tmp/backup
 classPaths:
   - assembly/target/scala-2.11/*
   #- core/target/*
@@ -19,9 +20,9 @@ instrumentation:
   debug: false
 datapipe:
   #build:  build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests package
-  build:
-    - cp pom.compile.xml pom.xml
-    - /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests install -Dmaven.repo.local=/home/bhaynes/research/spark/jars
+  #build:
+  #  - cp pom.compile.xml pom.xml
+  #  - /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests install -Dmaven.repo.local=/home/bhaynes/research/spark/jars
   import: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars
   export: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars
   verify:

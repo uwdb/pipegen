@@ -13,7 +13,7 @@ instrumentation:
   classes: .*JUnitTestRunner.*
   debug: true
 datapipe:
-  build:  ant clobber all buildjars
+  #build:  ant clobber all buildjars
   import: "ant -Dderby.junit.testclass=org.apache.derbyTesting.functionTests.tests.tools.ImportExportTest
                -Djava.security.policy='<NONE>'
                -Dthreads=1
