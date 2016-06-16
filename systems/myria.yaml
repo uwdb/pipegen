@@ -1,6 +1,7 @@
 name: Myria
 version: 51
 path: /home/bhaynes/research/myria/
+backupPath: /tmp/backup2
 classPaths:
   - build/libs/*
 instrumentation:

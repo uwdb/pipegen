@@ -30,6 +30,7 @@ public class CompileTimeConfiguration {
     private final Path configurationFile;
     private final Version version;
     private final Path basePath;
+    private final Path backupPath;
     private final Collection<Path> classPaths;
     private final Collection<Path> excludeClassPaths;
     private final Collection<ClassPath> classPoolPaths = Lists.newArrayList();
@@ -51,6 +52,7 @@ public class CompileTimeConfiguration {
         name = yaml.get("name").toString();
         version = new Version(Integer.parseInt(yaml.get("version").toString()), 0);
         basePath = Paths.get(yaml.get("path").toString());
+        backupPath = Paths.get(yaml.get("backupPath").toString());
         classPaths = getClassPaths(getChild(yaml, "classPaths", List.class));
         excludeClassPaths = getClassPaths(getChild(getChild(yaml, "optimization", Map.class), "excludeClassPaths", List.class));
 
@@ -73,7 +75,7 @@ public class CompileTimeConfiguration {
     public String getSystemName() { return name; }
     public Version getVersion() { return version; }
     public Path getBasePath() { return basePath; }
-    public Path getBackupPath() { return Paths.get("/tmp/backup"); } //TODO
+    public Path getBackupPath() { return backupPath; }
 
     public ClassPool getClassPool() {
         return pool;
