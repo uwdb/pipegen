@@ -42,36 +42,6 @@ public class PipeGen {
         DataPipeTasks.create(configuration);
     }
 
-    private static void importDataPipes(CompileTimeConfiguration configuration) {
-        try {
-            WorkerDirectoryServer directory = WorkerDirectoryServer.startIfNotStarted(
-                    new VerificationWorkerDirectory(),
-                    RuntimeConfiguration.getInstance().getWorkerDirectoryUri().getPort(),
-                    configuration.datapipeConfiguration.getLogPropertiesPath());
-
-            DataPipeTasks.build(configuration);
-
-            HostListener listener = new InstrumentationListener(configuration.importTask);
-
-            Process process = DataPipeTasks.test(configuration.importTask);
-
-            listener.join();
-            process.destroy();
-
-            DataPipeTasks.verifyExistingFunctionality(configuration.importTask);
-
-            ImportVerificationProxy importProxy = new ImportVerificationProxy(configuration.getBasePath());
-            DataPipeTasks.verifyDataPipeFunctionality(configuration.importTask);
-            importProxy.stop();
-
-            if(directory != null)
-                directory.stop();
-
-        } catch(MonitorException|InterruptedException|IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private static void Usage(String name, PrintStream writer) {
         writer.print(String.format("%s: [configuration filename]\n", name));
     }

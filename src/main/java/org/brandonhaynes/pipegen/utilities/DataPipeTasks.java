@@ -23,10 +23,10 @@ public class DataPipeTasks {
     public static void create(Task task) throws IOException, InterruptedException, MonitorException {
         // TODO shouldn't continue when one step fails...
         //DataPipeTasks.build(task.getConfiguration());
-        //DataPipeTasks.rollback(task.getConfiguration());
-        DataPipeTasks.instrument(task);
-        DataPipeTasks.verifyExistingFunctionality(task);
-        DataPipeTasks.verifyDataPipeFunctionality(task);
+        if(!DataPipeTasks.instrument(task) ||
+           !DataPipeTasks.verifyExistingFunctionality(task)
+           !DataPipeTasks.verifyDataPipeFunctionality(task))
+            DataPipeTasks.rollback(task.getConfiguration());
         log.info("Done");
     }
 
