@@ -10,29 +10,33 @@ import org.brandonhaynes.pipegen.utilities.JarUpdater;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 public class ExpressionReplacer {
     private static final Logger log = Logger.getLogger(ExpressionReplacer.class.getName());
 
     public static void replaceExpression(URL jarLocation, String className, String methodName, int line,
-                                         String targetExpression, String replacementExpression)
+                                         String targetExpression, String replacementExpression, Path backupPath)
             throws IOException, NotFoundException, CannotCompileException {
         ClassPool specificPool = new ClassPool(false);
         specificPool.appendSystemPath();
         specificPool.insertClassPath(new JarClassPath(jarLocation));
 
-        replaceExpression(specificPool.get(className), methodName, line, targetExpression, replacementExpression);
+        replaceExpression(specificPool.get(className), methodName, line, targetExpression,
+                          replacementExpression, backupPath);
     }
 
     public static void replaceExpression(String className, String methodName, int line,
-                                         String targetExpression, String replacementExpression, ClassPool pool)
+                                         String targetExpression, String replacementExpression,
+                                         ClassPool pool, Path backupPath)
             throws IOException, NotFoundException, CannotCompileException {
-        replaceExpression(pool.get(className), methodName, line, targetExpression, replacementExpression);
+        replaceExpression(pool.get(className), methodName, line, targetExpression, replacementExpression, backupPath);
     }
 
     private static void replaceExpression(CtClass targetClass, String methodName,
-                                          int line, String targetExpression, String replacementExpression)
+                                          int line, String targetExpression, String replacementExpression,
+                                          Path backupPath)
             throws IOException, NotFoundException, CannotCompileException {
         targetClass.defrost();
 
@@ -42,7 +46,7 @@ public class ExpressionReplacer {
             replaceExpression(targetClass.getDeclaredMethod(methodName), line, targetExpression, replacementExpression);
 
         if(targetClass.isModified())
-            JarUpdater.replaceClass(targetClass.getClassPool().find(targetClass.getName()), targetClass);
+            JarUpdater.replaceClass(targetClass.getClassPool().find(targetClass.getName()), targetClass, backupPath);
     }
 
     private static void replaceExpression(CtConstructor[] constructors, int line,

@@ -31,7 +31,7 @@ public class SuperClassReplacer {
         cc.defrost();
         cc.setSuperclass(superClass);
         JarUpdater.replaceClass(jarLocation, cc,
-                new Version(cc.getClassFile2().getMajorVersion(), cc.getClassFile2().getMinorVersion()));
+                new Version(cc.getClassFile2().getMajorVersion(), cc.getClassFile2().getMinorVersion()), null);
     }
 
 /*

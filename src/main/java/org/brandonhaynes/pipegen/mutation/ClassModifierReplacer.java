@@ -30,6 +30,6 @@ public class ClassModifierReplacer {
         cc.defrost();
         cc.setModifiers(modifiers);
         JarUpdater.replaceClass(jarLocation, cc,
-                new Version(cc.getClassFile2().getMajorVersion(), cc.getClassFile2().getMinorVersion()));
+                new Version(cc.getClassFile2().getMajorVersion(), cc.getClassFile2().getMinorVersion()), null);
     }
 }

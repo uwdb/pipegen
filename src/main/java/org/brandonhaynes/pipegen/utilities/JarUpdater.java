@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.jar.JarEntry;
@@ -23,67 +25,76 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
 public class JarUpdater {
-    public static void addClass(final JarFile jar, final CtClass cc, final Version version)
+    public static void addClass(final JarFile jar, final CtClass cc, final Version version, final Path backupPath)
             throws CannotCompileException, IOException {
         String temporaryDirectory = System.getProperty("java.io.tmpdir");
         cc.getClassFile().setMajorVersion(version.getMajor());
         cc.writeFile(temporaryDirectory);
-        addFile(jar, new File(String.format("%s/%s.class", temporaryDirectory, cc.getSimpleName())), cc.toBytecode());
+        addFile(jar, new File(String.format("%s/%s.class", temporaryDirectory, cc.getSimpleName())),
+                cc.toBytecode(), backupPath);
     }
 
-    public static void replaceClass(final URL jarUrl, final CtClass cc)
+    public static void replaceClass(final URL jarUrl, final CtClass cc, final Path backupPath)
             throws CannotCompileException, IOException {
         replaceClass(jarUrl, cc, new Version(cc.getClassFile2().getMajorVersion(),
-                cc.getClassFile2().getMinorVersion()));
+                cc.getClassFile2().getMinorVersion()), backupPath);
     }
 
-    public static void replaceClass(final URL jarUrl, final CtClass cc, final Version version)
+    public static void replaceClass(final URL jarUrl, final CtClass cc, final Version version, final Path backupPath)
             throws CannotCompileException, IOException {
-        replaceClass(new JarFile(((JarURLConnection) jarUrl.openConnection()).getJarFileURL().getFile()), cc, version);
+        replaceClass(new JarFile(((JarURLConnection) jarUrl.openConnection()).getJarFileURL().getFile()),
+                     cc, version, backupPath);
     }
 
     public static void replaceClasses(final URL jarUrl, final ClassPool pool, final Collection<Class> classes,
-                                      final Version version)
+                                      final Version version, final Path backupPath)
             throws CannotCompileException, IOException, NotFoundException {
         Collection<CompiledClass> compiledClasses = Lists.newArrayList();
         for (Class clazz : classes)
             compiledClasses.add(new CompiledClass(pool.get(clazz.getName()), version));
         replaceFiles(new JarFile(((JarURLConnection) jarUrl.openConnection()).getJarFileURL().getFile()),
-                compiledClasses);
+                compiledClasses, backupPath);
     }
 
-    public static void replaceClasses(final URL jarUrl, final Version version, final CtClass... ccs)
+    public static void replaceClasses(final URL jarUrl, final Version version,
+                                      final Path backupPath, final CtClass... ccs)
             throws CannotCompileException, IOException {
         Collection<CompiledClass> classes = Lists.newArrayList();
         for (CtClass cc : ccs)
             classes.add(new CompiledClass(cc, version));
         replaceFiles(new JarFile(((JarURLConnection) jarUrl.openConnection()).getJarFileURL().getFile()),
-                classes);
+                classes, backupPath);
     }
 
-    public static void replaceClass(final JarFile jar, final CtClass cc, final Version version)
+    public static void replaceClass(final JarFile jar, final CtClass cc, final Version version, final Path backupPath)
             throws CannotCompileException, IOException {
-        replaceFiles(jar, Lists.newArrayList(new CompiledClass(cc, version)));
+        replaceFiles(jar, Lists.newArrayList(new CompiledClass(cc, version)), backupPath);
     }
 
-    public static void replaceClass(final JarFile jar, final File classFile, byte[] bytecode)
+    public static void replaceClass(final JarFile jar, final File classFile, byte[] bytecode, final Path backupPath)
             throws CannotCompileException, IOException {
-        replaceFiles(jar, Lists.newArrayList(new CompiledClass(classFile, bytecode)));
+        replaceFiles(jar, Lists.newArrayList(new CompiledClass(classFile, bytecode)), backupPath);
     }
 
-    public static void addFile(final JarFile jar, final File classFile, final byte[] fileBytecode) throws IOException {
+    public static void addFile(final JarFile jar, final File classFile,
+                               final byte[] fileBytecode, final Path backupPath)
+            throws IOException {
         Collection<CompiledClass> classes = Lists.newArrayList(new CompiledClass(classFile, fileBytecode));
         if(Iterables.any(getEntryIterator(jar), entry -> isMatchingEntry(entry, classes)))
             throw new IOException("Specified file already exists in the jar.");
 
-        replaceFiles(jar, classes);
+        replaceFiles(jar, classes, backupPath);
     }
 
-    private static void replaceFiles(final JarFile jar, final Collection<CompiledClass> classes) throws IOException {
+    private static synchronized void replaceFiles(final JarFile jar,
+                                                  final Collection<CompiledClass> classes,
+                                                  final Path backupPath) throws IOException {
         File jarFile = new File(jar.getName());
         File stagingJarFile = File.createTempFile(jar.getName(), null);
         byte[] buffer = new byte[4096];
         int bytesRead;
+
+        backupJarFile(jarFile.toPath(), backupPath);
 
         try(FileOutputStream jarStream = new FileOutputStream(stagingJarFile)) {
             try(JarOutputStream stagingJar = new JarOutputStream(jarStream)) {
@@ -106,6 +117,16 @@ public class JarUpdater {
             Files.move(stagingJarFile.toPath(), jarFile.toPath(), StandardCopyOption.ATOMIC_MOVE);
             waitForCompletion();
         }
+    }
+
+    private static void backupJarFile(Path jarCurrentFile, Path backupPath) throws IOException {
+        Path jarBackup = backupPath != null ? Paths.get(backupPath.toString() + "/" + jarCurrentFile.toString()) : null;
+        Path jarBackupDirectory = jarBackup != null ? jarBackup.getParent() : null;
+
+        if(jarBackupDirectory != null && !jarBackupDirectory.toFile().exists())
+            jarBackupDirectory.toFile().mkdirs();
+        if(jarBackup != null && !jarBackup.toFile().exists())
+            Files.copy(jarCurrentFile, jarBackup);
     }
 
     private static File toClassPath(CtClass cc) {

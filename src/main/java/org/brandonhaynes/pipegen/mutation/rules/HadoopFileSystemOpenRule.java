@@ -68,10 +68,12 @@ public class HadoopFileSystemOpenRule implements Rule {
                     url,
                     task.getConfiguration().getClassPool(),
                     InterceptedFileSystemImport.getDependencies(),
-                    task.getConfiguration().getVersion());
+                    task.getConfiguration().getVersion(),
+                    task.getConfiguration().getBackupPath());
             ExpressionReplacer.replaceExpression(
                     frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
-                    targetExpression, template, task.getConfiguration().getClassPool());
+                    targetExpression, template, task.getConfiguration().getClassPool(),
+                    task.getConfiguration().getBackupPath());
         }
 
         task.getModifiedCallSites().add(frame);
@@ -96,8 +98,9 @@ public class HadoopFileSystemOpenRule implements Rule {
     }
 
     private String getUri(JsonNode node) {
-        String uri = node.get("state").get("uri").asText();
-        return !uri.isEmpty() && !uri.equals("null")
+        JsonNode uriNode = node.get("state").get("uri");
+        String uri = uriNode != null ? node.get("state").get("uri").asText() : null;
+        return uri != null && !uri.isEmpty() && !uri.equals("null")
                 ? uri
                 : null;
     }

@@ -60,11 +60,13 @@ public class FileOutputStreamRule implements Rule {
     private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
         ExpressionReplacer.replaceExpression(
                 frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
-                targetExpression, template, task.getConfiguration().getClassPool());
+                targetExpression, template, task.getConfiguration().getClassPool(),
+                task.getConfiguration().getBackupPath());
         JarUpdater.replaceClasses(task.getConfiguration().getClassPool().find(frame.getClassName()),
                 task.getConfiguration().getClassPool(),
                 InterceptedFileOutputStream.getDependencies(),
-                task.getConfiguration().getVersion());
+                task.getConfiguration().getVersion(),
+                task.getConfiguration().getBackupPath());
         task.getModifiedCallSites().add(frame);
         log.info(String.format("Injected data pipe at %s", frame.getStackFrame()));
         return true;

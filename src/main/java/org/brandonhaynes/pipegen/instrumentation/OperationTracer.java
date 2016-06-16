@@ -62,7 +62,7 @@ public class OperationTracer {
 			throws IOException {
 		ExecutorService executor = Executors.newFixedThreadPool(1);
 		final StringWriter writer = new StringWriter();
-		Process process = Runtime.getRuntime().exec(clientCommand);
+		//Process process = Runtime.getRuntime().exec(clientCommand);
 
 		try {
 			new SimpleTimeLimiter(executor).callWithTimeout((Callable<Void>) () -> {
@@ -87,7 +87,7 @@ public class OperationTracer {
 				log.warning(String.format("Swallowed exception '%s' during ungraceful client exit", e.getMessage()));
 	        }
             executor.shutdownNow();
-            process.destroy();
+            //process.destroy();
 		}
 
 		return new TraceResult(writer.toString());

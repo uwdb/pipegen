@@ -23,6 +23,7 @@ public class DataPipeTasks {
     public static void create(Task task) throws IOException, InterruptedException, MonitorException {
         // TODO shouldn't continue when one step fails...
         //DataPipeTasks.build(task.getConfiguration());
+        //DataPipeTasks.rollback(task.getConfiguration());
         DataPipeTasks.instrument(task);
         DataPipeTasks.verifyExistingFunctionality(task);
         DataPipeTasks.verifyDataPipeFunctionality(task);
@@ -39,7 +40,7 @@ public class DataPipeTasks {
         return process.exitValue() == 0;
     }
 
-    public static boolean instrument(Task task)
+    private static boolean instrument(Task task)
             throws IOException, MonitorException, InterruptedException {
         HostListener listener = new InstrumentationListener(task);
         Process process = DataPipeTasks.test(task);
@@ -54,11 +55,11 @@ public class DataPipeTasks {
         return task.getTaskScript().getProcessBuilder().start();
     }
 
-    public static boolean verifyExistingFunctionality(Task task) throws IOException, InterruptedException {
+    private static boolean verifyExistingFunctionality(Task task) throws IOException, InterruptedException {
         return verify(task.getConfiguration(), true) == 0;
     }
 
-    public static boolean verifyDataPipeFunctionality(Task task) throws IOException, InterruptedException {
+    private static boolean verifyDataPipeFunctionality(Task task) throws IOException, InterruptedException {
         WorkerDirectoryServer directory = WorkerDirectoryServer.startIfNotStarted(
                 new VerificationWorkerDirectory(),
                 RuntimeConfiguration.getInstance().getWorkerDirectoryUri().getPort(),
@@ -86,5 +87,10 @@ public class DataPipeTasks {
 
         log.info(String.format("Verification %s (%d)", process.exitValue() == 0 ? "complete" : "failed", process.exitValue()));
         return process.exitValue();
+    }
+
+    public static void rollback(CompileTimeConfiguration configuration) throws IOException {
+        log.info(String.format("Rolling back %s", configuration.getSystemName()));
+        FileRestorer.restoreFiles(configuration.getBackupPath(), new String[] {"jar", "class"});
     }
 }

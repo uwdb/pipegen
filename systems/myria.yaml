@@ -22,9 +22,9 @@ optimization:
     - build/libs/s*.jar
     - build/libs/x*.jar
 datapipe:
-  build:  ./gradlew -Dtest.single=FileScanTest clean jar
-  import: ./gradlew -Dtest.single=FileScanTest test
-  export: ./gradlew -Dtest.single=DataSinkTest cleanTest test
+  build:  /home/bhaynes/research/myria/gradlew -Dtest.single=FileScanTest clean jar #-Dtest.debug
+  import: /home/bhaynes/research/myria/gradlew -Dtest.single=FileScanTest jar cleanTest test #-Dtest.debug
+  export: ./gradlew -Dtest.single=DataSinkTest compileJava cleanTest test
   verify:
     - unzip -o build/libs/myria-0.1.jar -d build/main | grep brandonhaynes
     - ./gradlew -Dtest.single=FileScanTest -x compileJava cleanTest test

@@ -19,40 +19,40 @@ public class ImportTracer {
 //    }
 
 
-//    @OnMethod(clazz="+java.io.FileInputStream",
-//            method="<init>",
-//            location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
-//    public static void OnFileInputStream(@Self Object self, @TargetMethodOrField String method,
-//                                         @ProbeMethodName String probeMethod, AnyType[] args) {
-//        StringBuilder buffer = new StringBuilder();
-//
-//        buffer.append("Entry:").append(LINE_SEPARATOR);
-//        buffer.append(classOf(self)).append(LINE_SEPARATOR);
-//        buffer.append(probeLine()).append(LINE_SEPARATOR);
-//        printArray(buffer, args);
-//        printFields(buffer, self);
-//        jstack(buffer);
-//
-//        println(buffer.toString());
-//    }
+    @OnMethod(clazz="+java.io.FileInputStream",
+            method="<init>",
+            location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnFileInputStream(@Self Object self, @TargetMethodOrField String method,
+                                         @ProbeMethodName String probeMethod, AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
 
-//    @OnMethod(clazz="+java.io.FileOutputStream",
-//            method="<init>") //,
-//            //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
-//    public static void OnFileOutputStream(@Self Object self, //@TargetMethodOrField String method),
-//                                          //@ProbeMethodName String probeMethod,
-//                                          AnyType[] args) {
-//        StringBuilder buffer = new StringBuilder();
-//
-//        buffer.append("Entry:").append(LINE_SEPARATOR);
-//        buffer.append(classOf(self)).append(LINE_SEPARATOR);
-//        buffer.append(probeLine()).append(LINE_SEPARATOR);
-//        printArray(buffer, args);
-//        printFields(buffer, self);
-//        jstack(buffer);
-//
-//        println(buffer.toString());
-//    }
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
+        printFields(buffer, self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
+
+    @OnMethod(clazz="+java.io.FileOutputStream",
+            method="<init>") //,
+            //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnFileOutputStream(@Self Object self, //@TargetMethodOrField String method),
+                                          //@ProbeMethodName String probeMethod,
+                                          AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
+
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
+        printFields(buffer, self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
 
     /*
     @OnMethod(clazz="org.apache.hadoop.fs.FileSystem",

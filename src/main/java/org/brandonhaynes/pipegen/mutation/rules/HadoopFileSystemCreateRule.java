@@ -69,11 +69,12 @@ public class HadoopFileSystemCreateRule implements Rule {
                     url,
                     task.getConfiguration().getClassPool(),
                     InterceptedFileSystemExport.getDependencies(),
-                    task.getConfiguration().getVersion());
+                    task.getConfiguration().getVersion(),
+                    task.getConfiguration().getBackupPath());
 
             ExpressionReplacer.replaceExpression(
                     url, frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
-                    targetExpression, template);
+                    targetExpression, template, task.getConfiguration().getBackupPath());
         }
 
         task.getModifiedCallSites().add(frame);

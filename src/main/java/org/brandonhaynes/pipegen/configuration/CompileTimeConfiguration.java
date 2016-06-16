@@ -73,6 +73,7 @@ public class CompileTimeConfiguration {
     public String getSystemName() { return name; }
     public Version getVersion() { return version; }
     public Path getBasePath() { return basePath; }
+    public Path getBackupPath() { return Paths.get("/tmp/backup"); } //TODO
 
     public ClassPool getClassPool() {
         return pool;
@@ -176,7 +177,7 @@ public class CompileTimeConfiguration {
     }
 
     public class DataPipeConfiguration {
-        private final Script buildScript;
+        private final Script buildScript; //TODO deprecate this
         private final Script verifyScript;
         private final Script importScript;
         private final Script exportScript;
