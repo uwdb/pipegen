@@ -24,7 +24,7 @@ public class DataPipeTasks {
         // TODO shouldn't continue when one step fails...
         //DataPipeTasks.build(task.getConfiguration());
         if(!DataPipeTasks.instrument(task) ||
-           !DataPipeTasks.verifyExistingFunctionality(task)
+           !DataPipeTasks.verifyExistingFunctionality(task) ||
            !DataPipeTasks.verifyDataPipeFunctionality(task))
             DataPipeTasks.rollback(task.getConfiguration());
         log.info("Done");
