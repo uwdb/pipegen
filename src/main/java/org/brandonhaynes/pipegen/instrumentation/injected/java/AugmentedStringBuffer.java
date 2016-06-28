@@ -111,6 +111,12 @@ public class AugmentedStringBuffer extends StringBuffer {
     }
 
     @Override
+    public synchronized StringBuffer append(java.lang.StringBuffer var1) {
+        builder.append(var1);
+        return this;
+    }
+
+    @Override
     public synchronized StringBuffer append(CharSequence var1, int var2, int var3) {
         builder.append(var1, var2, var3);
         return this;

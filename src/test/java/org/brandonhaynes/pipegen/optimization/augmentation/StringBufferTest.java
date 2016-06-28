@@ -1,4 +1,4 @@
-package org.brandonhaynes.pipegen.optimization.intraprocedural;
+package org.brandonhaynes.pipegen.optimization.augmentation;
 
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedStringBuffer;

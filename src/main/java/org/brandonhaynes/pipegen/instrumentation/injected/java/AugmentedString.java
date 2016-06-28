@@ -1,5 +1,7 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.java;
 
+import org.brandonhaynes.pipegen.utilities.ArrayUtilities;
+
 import java.io.UnsupportedEncodingException;
 import java.lang.String;
 import java.nio.charset.Charset;
@@ -18,39 +20,74 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     private float[] floatState;
     private double[] doubleState;
 
+    public static AugmentedString decorate(short i) {
+        return new AugmentedString(i);
+    }
     public static AugmentedString decorate(int i) {
         return new AugmentedString(i);
     }
     public static AugmentedString decorate(byte b) {
         return new AugmentedString(b);
     }
+    public static AugmentedString decorate(float f) {
+        return new AugmentedString(f);
+    }
+    public static AugmentedString decorate(double d) {
+        return new AugmentedString(d);
+    }
     public static AugmentedString decorate(Object o) {
         return new AugmentedString(o);
+    }
+
+    public static AugmentedString concat(AugmentedString left, byte right) {
+        return new AugmentedString(ArrayUtilities.concat(left.state, BYTE),
+                                   ArrayUtilities.concat(left.byteState, right),
+                                   left.intState, left.floatState, left.doubleState);
+    }
+
+    public static AugmentedString concat(AugmentedString left, int right) {
+        return new AugmentedString(ArrayUtilities.concat(left.state, INTEGER), left.byteState,
+                ArrayUtilities.concat(left.intState, right), left.floatState, left.doubleState);
+    }
+
+    public static AugmentedString concat(AugmentedString left, float right) {
+        return new AugmentedString(ArrayUtilities.concat(left.state, FLOAT), left.byteState, left.intState,
+                                   ArrayUtilities.concat(left.floatState, right), left.doubleState);
+    }
+
+    public static AugmentedString concat(AugmentedString left, double right) {
+        return new AugmentedString(ArrayUtilities.concat(left.state, DOUBLE), left.byteState, left.intState,
+                                   left.floatState, ArrayUtilities.concat(left.doubleState, right));
     }
 
     public static AugmentedString concat(AugmentedString left, Object right) {
         if(right instanceof AugmentedString)
             return concat(left, (AugmentedString)right);
-        else {
-            Object[] newState = new Object[left.state.length + 1];
-            System.arraycopy(left.state, 0, newState, 0, left.state.length);
-            newState[left.state.length] = right;
-            return new AugmentedString(newState);
-        }
+        else
+            return new AugmentedString(ArrayUtilities.concat(left.state, right), left.byteState, left.intState,
+                                                                                 left.floatState, left.doubleState);
     }
 
     public static AugmentedString concat(AugmentedString left, AugmentedString right) {
-        Object[] newState = new Object[left.state.length + right.state.length];
-        System.arraycopy(left.state, 0, newState, 0, left.state.length);
-        System.arraycopy(right.state, 0, newState, left.state.length, right.state.length);
-        return new AugmentedString(newState);
+        Object[] newState = ArrayUtilities.concat(left.state, right.state);
+        byte[] newBytes = ArrayUtilities.concat(left.byteState, right.byteState);
+        int[] newInts = ArrayUtilities.concat(left.intState, right.intState);
+        float[] newFloats = ArrayUtilities.concat(left.floatState, right.floatState);
+        double[] newDoubles = ArrayUtilities.concat(left.doubleState, right.doubleState);
+
+        return new AugmentedString(newState, newBytes, newInts, newFloats, newDoubles);
     }
 
     public AugmentedString() {
         this.state = new Object[0];
+        this.byteState = new byte[0];
+        this.intState = new int[0];
+        this.floatState = new float[0];
+        this.doubleState = new double[0];
     }
 
     public AugmentedString(String s) {
+        this();
         decoratedString = s;
     }
 
@@ -66,13 +103,41 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
         this.byteState[0] = b;
     }
 
+    public AugmentedString(float f) {
+        this(FLOAT);
+        this.floatState = new float[1];
+        this.floatState[0] = f;
+    }
+
+    public AugmentedString(double d) {
+        this(DOUBLE);
+        this.doubleState = new double[1];
+        this.doubleState[0] = d;
+    }
+
     public AugmentedString(Object o) {
+        this.byteState = new byte[0];
+        this.intState = new int[0];
+        this.floatState = new float[0];
+        this.doubleState = new double[0];
         this.state = new Object[1];
         this.state[0] = o;
     }
 
     public AugmentedString(Object[] state) {
         this.state = state;
+        this.byteState = new byte[0];
+        this.intState = new int[0];
+        this.floatState = new float[0];
+        this.doubleState = new double[0];
+    }
+
+    private AugmentedString(Object[] state, byte[] bytes, int[] ints, float[] floats, double[] doubles) {
+        this.state = state;
+        this.byteState = bytes;
+        this.intState = ints;
+        this.floatState = floats;
+        this.doubleState = doubles;
     }
 
     private String collapse() {
@@ -164,7 +229,7 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     }
 
     @Override
-    public boolean contentEquals(StringBuffer var1) {
+    public boolean contentEquals(java.lang.StringBuffer var1) {
         return collapse().contentEquals(var1);
     }
 
