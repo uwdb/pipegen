@@ -11,9 +11,16 @@ import soot.Modifier;
 import java.io.IOException;
 
 public class ClassUtilities {
-    public static void RemoveFinalFlagFromString() throws IOException {
+    public static void main(String[] args) throws IOException {
+        if(args.length != 2)
+            System.out.println("Usage: ClassUtilities RemoveFinalFlagFromString class-name");
+        else
+            RemoveFinalFlagFromString(args[1]);
+    }
+
+    public static void RemoveFinalFlagFromString(String className) throws IOException {
         try {
-            ClassModifierReplacer.setModifiers(new ClassPool(true), "java.lang.String", Modifier.PUBLIC);
+            ClassModifierReplacer.setModifiers(new ClassPool(true), className, Modifier.PUBLIC);
         } catch(NotFoundException| CannotCompileException e) {
             throw new IOException(e);
         }

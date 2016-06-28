@@ -3,7 +3,7 @@ package org.brandonhaynes.pipegen.optimization;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.brandonhaynes.pipegen.optimization.sinks.SinkExpression;
-import org.brandonhaynes.pipegen.optimization.transforms.ExpressionTransformer;
+import org.brandonhaynes.pipegen.optimization.transforms.CompositeExpressionTransformer;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
@@ -23,23 +23,23 @@ public class DataFlowAnalysis extends BackwardFlowAnalysis<Unit, Set<Unit>> {
     private final Set<Value> taintedValues;
     private final Queue<MethodAnalysis> taintedCallers;
     private final SinkExpression sinkExpression;
-    private final ExpressionTransformer transformExpression;
+    private final CompositeExpressionTransformer transformExpression;
     private final UnitGraph graph;
 
     public DataFlowAnalysis(Queue<MethodAnalysis> queue, MethodAnalysis current,
-                            SinkExpression sinkExpression, ExpressionTransformer transformExpression) {
+                            SinkExpression sinkExpression, CompositeExpressionTransformer transformExpression) {
         this(queue, current.getCaller(), current.getTaintedParameters(),
                 sinkExpression, transformExpression);
     }
 
     public DataFlowAnalysis(Queue<MethodAnalysis> queue, SootMethod method, Set<Value> taintedValues,
-                            SinkExpression sinkExpression, ExpressionTransformer transformExpression) {
+                            SinkExpression sinkExpression, CompositeExpressionTransformer transformExpression) {
         this(queue, new ExceptionalUnitGraph(method.getActiveBody()), taintedValues,
              sinkExpression, transformExpression);
     }
 
     public DataFlowAnalysis(Queue<MethodAnalysis> queue, UnitGraph graph, Set<Value> taintedValues,
-                            SinkExpression sinkExpression, ExpressionTransformer transformExpression) {
+                            SinkExpression sinkExpression, CompositeExpressionTransformer transformExpression) {
         super(graph);
         this.graph = graph;
         this.taintedUnits = Maps.newHashMap();
@@ -84,7 +84,7 @@ public class DataFlowAnalysis extends BackwardFlowAnalysis<Unit, Set<Unit>> {
         if(sinkExpression.isApplicable(input, node, output))
             taintNode(node, input, output);
         if(transformExpression.isApplicable(input, node, output))
-            transformExpression.transform(input, node, output);
+            transformExpression.transform(input, node, output, transformExpression);
     }
 
     private void taintNode(Unit node, Set<Unit> input, Set<Unit> output) {

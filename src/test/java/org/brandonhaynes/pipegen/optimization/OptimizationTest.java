@@ -52,7 +52,7 @@ public abstract class OptimizationTest {
     public void testTransformedClass(Path transformedClassPath)
             throws MalformedURLException, ClassNotFoundException, NoSuchMethodException,
                    IllegalAccessException, InstantiationException, InvocationTargetException {
-        ClassLoader loader = new URLClassLoader(new URL[] {getOutputPath().toUri().toURL()}, null);
+        ClassLoader loader = new URLClassLoader(new URL[] {transformedClassPath.toUri().toURL()}, null);
         Class<?> clazz = loader.loadClass(getClass().getName());
         Object instance = clazz.newInstance();
         Method method = clazz.getDeclaredMethod(getInvocationMethodName());

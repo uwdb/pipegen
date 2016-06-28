@@ -64,7 +64,7 @@ public class Optimizer {
             MethodAnalysis analysis = queue.remove();
             if(analysis.getCallee() != null) //TODO do this inside sink
                 sinkExpressions.add(new InvokeMethodSinkExpression(analysis.getCallee()));
-            new DataFlowAnalysis(queue, analysis, sinkExpressions, StringExpressionTransformer.getAll());
+            new DataFlowAnalysis(queue, analysis, sinkExpressions, new StringExpressionTransformer());
         }
     }
 

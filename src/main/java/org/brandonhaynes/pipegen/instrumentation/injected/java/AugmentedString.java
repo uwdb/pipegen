@@ -1,16 +1,22 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.java;
 
-import com.google.common.base.Joiner;
-
 import java.io.UnsupportedEncodingException;
 import java.lang.String;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
 public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.injected.java.String {
-//public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.injected.java.String {
+    private static final Integer INTEGER = 0;
+    private static final Byte BYTE = 0;
+    private static final Float FLOAT = 0f;
+    private static final Double DOUBLE= 0d;
+
     private String decoratedString = null;
     private Object[] state;
+    private byte[] byteState;
+    private int[] intState;
+    private float[] floatState;
+    private double[] doubleState;
 
     public static AugmentedString decorate(int i) {
         return new AugmentedString(i);
@@ -22,20 +28,42 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
         return new AugmentedString(o);
     }
 
+    public static AugmentedString concat(AugmentedString left, Object right) {
+        if(right instanceof AugmentedString)
+            return concat(left, (AugmentedString)right);
+        else {
+            Object[] newState = new Object[left.state.length + 1];
+            System.arraycopy(left.state, 0, newState, 0, left.state.length);
+            newState[left.state.length] = right;
+            return new AugmentedString(newState);
+        }
+    }
+
+    public static AugmentedString concat(AugmentedString left, AugmentedString right) {
+        Object[] newState = new Object[left.state.length + right.state.length];
+        System.arraycopy(left.state, 0, newState, 0, left.state.length);
+        System.arraycopy(right.state, 0, newState, left.state.length, right.state.length);
+        return new AugmentedString(newState);
+    }
+
     public AugmentedString() {
         this.state = new Object[0];
     }
 
-    public AugmentedString(String var1) {
-        decoratedString = var1;
+    public AugmentedString(String s) {
+        decoratedString = s;
     }
 
     public AugmentedString(int i) {
-        this(new Integer(i)); //TODO support primitives
+        this(INTEGER);
+        this.intState = new int[1];
+        this.intState[0] = i;
     }
 
     public AugmentedString(byte b) {
-        this(new Byte(b)); //TODO support primitives
+        this(BYTE);
+        this.byteState = new byte[1];
+        this.byteState[0] = b;
     }
 
     public AugmentedString(Object o) {
@@ -48,9 +76,23 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     }
 
     private String collapse() {
-        return decoratedString == null
-                ? (decoratedString = Joiner.on("").join(state))
-                : decoratedString;
+        if(!hasCollapsed()) {
+            StringBuilder builder = new StringBuilder();
+            for(int i = 0, intIndex = 0, byteIndex = 0, floatIndex = 0, doubleIndex = 0; i < state.length; i++)
+                if(state[i] == INTEGER)
+                    builder.append(intState[intIndex++]);
+                else if(state[i] == BYTE)
+                    builder.append(byteState[byteIndex++]);
+                else if(state[i] == FLOAT)
+                    builder.append(floatState[floatIndex++]);
+                else if(state[i] == DOUBLE)
+                    builder.append(doubleState[doubleIndex++]);
+                else
+                    builder.append(state[i]);
+            decoratedString = builder.toString();
+        }
+
+        return decoratedString;
     }
 
     private boolean hasCollapsed() { return decoratedString != null; }
