@@ -57,6 +57,24 @@ public class ArrayUtilities {
         return joined;
     }
 
+    public static long[] concat(long[] left, long[] right) {
+        long[] joined = new long[left.length + right.length];
+
+        System.arraycopy(left, 0, joined, 0, left.length);
+        System.arraycopy(right, 0, joined, left.length, right.length);
+
+        return joined;
+    }
+
+    public static long[] concat(long[] left, long right) {
+        long[] joined = new long[left.length + 1];
+
+        System.arraycopy(left, 0, joined, 0, left.length);
+        joined[left.length] = right;
+
+        return joined;
+    }
+
     public static float[] concat(float[] left, float[] right) {
         float[] joined = new float[left.length + right.length];
 
