@@ -38,7 +38,6 @@ public class Optimizer {
     }
 
     private static Scene executeSoot(Collection<String> methodSignatures) {
-        //soot.Main.v().autoSetOptions();
         IoSinkExpressions sinkExpressions = new IoSinkExpressions();
 
         Scene.v().loadNecessaryClasses();
