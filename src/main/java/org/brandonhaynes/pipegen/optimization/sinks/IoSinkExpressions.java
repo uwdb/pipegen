@@ -1,22 +1,40 @@
 package org.brandonhaynes.pipegen.optimization.sinks;
 
 import com.google.common.collect.Lists;
-import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStream;
+import org.brandonhaynes.pipegen.optimization.MethodAnalysis;
 import soot.Unit;
+import soot.Value;
+import soot.toolkits.graph.UnitGraph;
 
+import java.io.OutputStreamWriter;
 import java.util.Collection;
+import java.util.Queue;
 import java.util.Set;
 
 public class IoSinkExpressions implements SinkExpression {
-    private static final Collection<SinkExpression> statements = Lists.newArrayList(
-            new InvokeMethodSinkExpression(InterceptedFileOutputStream.class, "write"));
+    private final Collection<SinkExpression> statements;
 
-    public static SinkExpression getAll() { return new IoSinkExpressions(); }
+    public IoSinkExpressions() {
+        statements = Lists.newArrayList(
+                new InvokeMethodSinkExpression(OutputStreamWriter.class, "write"),
+                new ParameterSinkExpression());
+                //new InvokeMethodSinkExpression(InterceptedFileOutputStream.class, "write"));
+    }
 
-    private IoSinkExpressions() {}
+    public void add(SinkExpression expression) {
+        statements.add(expression);
+    }
 
     @Override
     public boolean isApplicable(Set<Unit> input, Unit node, Set<Unit> output) {
         return statements.stream().anyMatch(s -> s.isApplicable(input, node, output));
+    }
+
+    @Override
+    public void propagateTaint(UnitGraph graph, Set<Unit> input, Unit node, Set<Unit> output,
+                               Set<Value> taintedValues, Queue<MethodAnalysis> methods) {
+        statements.stream()
+                  .filter(s -> s.isApplicable(input, node, output))
+                  .forEach(s -> s.propagateTaint(graph, input, node, output, taintedValues, methods));
     }
 }

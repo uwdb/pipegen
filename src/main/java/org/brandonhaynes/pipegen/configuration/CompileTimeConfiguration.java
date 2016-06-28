@@ -16,12 +16,16 @@ import org.brandonhaynes.pipegen.runtime.proxy.ExportVerificationProxy;
 import org.brandonhaynes.pipegen.runtime.proxy.ImportVerificationProxy;
 import org.brandonhaynes.pipegen.runtime.proxy.VerificationProxy;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -113,16 +117,17 @@ public class CompileTimeConfiguration {
         Collection<Path> paths = Lists.newArrayList();
         for(Object path: yaml)
             if(path.toString().startsWith("recurse:"))
-                paths.addAll(getJarsRecursively(makeAbsolutePath(path.toString().substring("recurse:".length()).replace("*", ""))));
+                paths.addAll(getFilesRecursively(makeAbsolutePath(path.toString().substring("recurse:".length()).replace("*", "")),
+                                                 new String[] {"jar", "class"}));
             else
                 paths.add(Paths.get(makeAbsolutePath(path).toString()));
         return paths;
     }
 
-    private Collection<Path> getJarsRecursively(Path path) {
-        return Lists.newArrayList(FileUtils.iterateFiles(path.toFile(), new String[] {"jar"}, true))
+    private Collection<Path> getFilesRecursively(Path path, String[] extensions) {
+        return Lists.newArrayList(FileUtils.iterateFiles(path.toFile(), extensions, true))
                     .stream()
-                    .map(f -> f.toPath())
+                    .map(File::toPath)
                     .collect(Collectors.toList());
     }
 

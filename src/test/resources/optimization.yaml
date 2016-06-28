@@ -1,0 +1,24 @@
+name: Pipegen-Tests
+version: 51
+path: /home/bhaynes/research/pipegen/
+backupPath: /tmp/backup
+classPaths:
+  - target/production/
+  - target/test/
+instrumentation:
+  port: 7780
+  timeout: 60
+  trace: $DIR/templates/ImportTracer.java
+  agent: $DIR/lib/btrace-agent.jar
+  logs: /tmp
+  commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
+  classes: .*
+  debug: false
+optimization:
+  excludeClassPaths:
+    - lib/scala*.jar
+datapipe:
+  import: ":"
+  export: ":"
+  verify: ":"
+  debug: true

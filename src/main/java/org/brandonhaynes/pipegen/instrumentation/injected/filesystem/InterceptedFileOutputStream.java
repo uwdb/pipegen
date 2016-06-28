@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
+import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtilities;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
@@ -44,7 +45,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	private final WorkerDirectoryEntry entry;
 	private final OutputStream stream;
 
-    public InterceptedFileOutputStream(File file) throws IOException {
+    InterceptedFileOutputStream(File file) throws IOException {
         this(file.getName());
     }
 
@@ -60,6 +61,30 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 		} catch(Exception e) {
 			throw new IOException(e);
 		}
+	}
+
+	public void write(AugmentedString value) throws IOException {
+		stream.write(value.getBytes());
+	}
+
+	@Override
+	public void write(byte[] b) throws IOException {
+		stream.write(b);
+	}
+
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		stream.write(b, off, len);
+	}
+
+	@Override
+	public void write(int b) throws IOException {
+		stream.write(b);
+	}
+
+	@Override
+	public void flush() throws IOException {
+		stream.flush();
 	}
 
 	@Override
@@ -84,24 +109,4 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	//public FileDescriptor getFD() {
 	//  throw new RuntimeException("PipeGen does not support direct access to file descriptor.");
 	//}
-
-	@Override
-	public void write(byte[] b) throws IOException {
-		stream.write(b);
-	}
-
-	@Override
-	public void write(byte[] b, int off, int len) throws IOException {
-		stream.write(b, off, len);
-	}
-
-	@Override
-	public void flush() throws IOException {
-		stream.flush();
-	}
-
-	@Override
-	public void write(int b) throws IOException {
-		stream.write(b);
-	}
 }

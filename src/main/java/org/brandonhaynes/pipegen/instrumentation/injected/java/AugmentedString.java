@@ -1,18 +1,23 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.java;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.String;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Locale;
 
 public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.injected.java.String {
 //public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.injected.java.String {
     private String decoratedString = null;
     private Object[] state;
 
+    public static AugmentedString decorate(int i) {
+        return new AugmentedString(i);
+    }
+    public static AugmentedString decorate(byte b) {
+        return new AugmentedString(b);
+    }
     public static AugmentedString decorate(Object o) {
         return new AugmentedString(o);
     }
@@ -23,6 +28,14 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
 
     public AugmentedString(String var1) {
         decoratedString = var1;
+    }
+
+    public AugmentedString(int i) {
+        this(new Integer(i)); //TODO support primitives
+    }
+
+    public AugmentedString(byte b) {
+        this(new Byte(b)); //TODO support primitives
     }
 
     public AugmentedString(Object o) {
