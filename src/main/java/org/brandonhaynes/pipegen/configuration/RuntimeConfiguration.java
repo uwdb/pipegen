@@ -1,5 +1,7 @@
 package org.brandonhaynes.pipegen.configuration;
 
+import org.apache.arrow.vector.BaseValueVector;
+
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +30,7 @@ public class RuntimeConfiguration {
         builder.environment().put(verificationEnvironmentVariableName, Boolean.toString(verificationMode));
     }
 
+    public long getBufferAllocationSize() { return BaseValueVector.INITIAL_VALUE_ALLOCATION * 1024; }
     public Pattern getFilenamePattern() { return filenamePattern; }
     public URI getWorkerDirectoryUri() { return workerDirectoryUri; }
     public boolean isInVerificationMode() {

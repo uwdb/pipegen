@@ -2,6 +2,7 @@ package org.brandonhaynes.pipegen.instrumentation.injected.java;
 
 import org.brandonhaynes.pipegen.utilities.ArrayUtilities;
 
+import javax.annotation.Nonnull;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.String;
@@ -10,7 +11,7 @@ import java.util.Locale;
 
 public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.injected.java.String {
     private static final Integer INTEGER = 0;
-    private static final Long LONG = 0l;
+    private static final Long LONG = 0L;
     private static final Byte BYTE = 0;
     private static final Float FLOAT = 0f;
     private static final Double DOUBLE= 0d;
@@ -22,6 +23,8 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     private long[] longState;
     private float[] floatState;
     private double[] doubleState;
+
+    public static final AugmentedString empty = new AugmentedString();
 
     public static AugmentedString decorate(short i) {
         return new AugmentedString(i);
@@ -146,7 +149,7 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
         this.state[0] = o;
     }
 
-    public AugmentedString(Object[] state) {
+    public AugmentedString(Object... state) {
         this.state = state;
         this.byteState = new byte[0];
         this.intState = new int[0];
@@ -188,6 +191,8 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     }
 
     private boolean hasCollapsed() { return decoratedString != null; }
+    public Object[] getState() { return state; }
+
 
     @Override
     public int length() {
@@ -236,16 +241,19 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     }
 
     @Override
+    @Nonnull
     public byte[] getBytes(String var1) throws UnsupportedEncodingException {
         return collapse().getBytes(var1);
     }
 
     @Override
+    @Nonnull
     public byte[] getBytes(Charset var1) {
         return collapse().getBytes(var1);
     }
 
     @Override
+    @Nonnull
     public byte[] getBytes() {
         return collapse().getBytes();
     }
@@ -256,7 +264,7 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     }
 
     @Override
-    public boolean contentEquals(java.lang.StringBuffer var1) {
+    public boolean contentEquals(@Nonnull java.lang.StringBuffer var1) {
         return collapse().contentEquals(var1);
     }
 
@@ -351,26 +359,31 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     }
 
     @Override
+    @Nonnull
     public String substring(int var1) {
         return collapse().substring(var1);
     }
 
     @Override
+    @Nonnull
     public String substring(int var1, int var2) {
         return collapse().substring(var1, var2);
     }
 
     @Override
+    @Nonnull
     public CharSequence subSequence(int var1, int var2) {
         return collapse().subSequence(var1, var2);
     }
 
     @Override
+    @Nonnull
     public String concat(String var1) {
         return collapse().concat(var1);
     }
 
     @Override
+    @Nonnull
     public String replace(char var1, char var2) {
         return collapse().replace(var1, var2);
     }
@@ -383,6 +396,14 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     @Override
     public boolean contains(CharSequence var1) {
         return collapse().contains(var1);
+    }
+
+    public boolean containsNonNumeric(CharSequence c) {
+        for (Object v : state)
+            if ((v instanceof AugmentedString && ((AugmentedString) v).containsNonNumeric(c)) ||
+                    (v instanceof String && ((String) v).contains(c)))
+                return true;
+        return false;
     }
 
     @Override
@@ -401,46 +422,55 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     }
 
     @Override
+    @Nonnull
     public String[] split(String var1, int var2) {
         return collapse().split(var1, var2);
     }
 
     @Override
+    @Nonnull
     public String[] split(String var1) {
         return collapse().split(var1);
     }
 
     @Override
+    @Nonnull
     public String toLowerCase(Locale var1) {
         return collapse().toLowerCase();
     }
 
     @Override
+    @Nonnull
     public String toLowerCase() {
         return collapse().toLowerCase();
     }
 
     @Override
+    @Nonnull
     public String toUpperCase(Locale var1) {
         return collapse().toUpperCase(var1);
     }
 
     @Override
+    @Nonnull
     public String toUpperCase() {
         return collapse().toUpperCase();
     }
 
     @Override
+    @Nonnull
     public String trim() {
         return collapse().trim();
     }
 
     @Override
+    @Nonnull
     public String toString() {
-        return (String)(Object)this;
+        return this;
     }
 
     @Override
+    @Nonnull
     public char[] toCharArray() {
         return collapse().toCharArray();
     }

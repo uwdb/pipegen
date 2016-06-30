@@ -6,8 +6,9 @@ import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtili
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 
-import java.io.FileInputStream;
+import javax.annotation.Nonnull;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -50,7 +51,7 @@ public class InterceptedFileInputStream extends FileInputStream {
 	public InterceptedFileInputStream(String filename) throws IOException {
         super(nullDescriptor);
         this.filename = filename;
-		try {
+//		try {
 			this.serverSocket = new ServerSocket(0);
 			this.entry = new WorkerDirectoryClient(InterceptUtilities.getSystemName(filename)).registerImport(
 					serverSocket.getInetAddress().getHostName(), serverSocket.getLocalPort());
@@ -58,9 +59,9 @@ public class InterceptedFileInputStream extends FileInputStream {
 			this.stream = this.socket.getInputStream();
 			//this.stream = WorkerDirectoryClient.connectImport(entry);
 			InterceptMetadata.read(this.stream);
-		} catch(Exception e) {
-			throw new IOException(e);
-		}
+//		} catch(Exception e) {
+//			throw new IOException(e);
+//		}
 	}
 
     @Override
@@ -113,12 +114,12 @@ public class InterceptedFileInputStream extends FileInputStream {
 	}
 
 	@Override
-	public int read(byte[] b) throws IOException {
+	public int read(@Nonnull byte[] b) throws IOException {
 		return stream.read(b);
 	}
 
 	@Override
-	public int read(byte[] b, int off, int len) throws IOException {
+	public int read(@Nonnull byte[] b, int off, int len) throws IOException {
 		return stream.read(b, off, len);
 	}
 
