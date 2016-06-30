@@ -1,8 +1,5 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
-import org.apache.arrow.memory.BufferAllocator;
-import org.apache.arrow.memory.RootAllocator;
-import org.apache.arrow.vector.ValueVector;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
@@ -10,6 +7,7 @@ import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtili
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 import org.brandonhaynes.pipegen.utilities.ColumnUtilities;
+import org.brandonhaynes.pipegen.utilities.CompositeVector;
 
 import javax.annotation.Nonnull;
 import java.io.*;
@@ -17,10 +15,10 @@ import java.net.Socket;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class InterceptedFileOutputStream extends FileOutputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
+    private static final int VECTOR_LIMIT = 4096;
 
 	public static FileOutputStream intercept(String filename) throws IOException {
 		return RuntimeConfiguration.getInstance().getFilenamePattern().matcher(filename).matches()
@@ -50,9 +48,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	private final Socket socket;
 	private final WorkerDirectoryEntry entry;
 	private final OutputStream stream;
-    private final BufferAllocator allocator = new RootAllocator(RuntimeConfiguration.getInstance().getBufferAllocationSize());
-    private List<ValueVector> vectors;
-    private boolean isInferred = false;
+    private CompositeVector vector;
     private AugmentedString inferenceEvidence = AugmentedString.empty;
 
     public InterceptedFileOutputStream(File file) throws IOException {
@@ -68,21 +64,35 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 		new InterceptMetadata(filename).write(this.stream);
 	}
 
-    public List<ValueVector> getVectors() { return vectors; }
-    public boolean getIsInferred() { return isInferred; }
+    public CompositeVector getVector() { return vector; }
+    private boolean getIsInferred() { return vector != null; }
+    private boolean getIsVectorFull() { return vector.getAccessor().getValueCount() > VECTOR_LIMIT; }
 
 	public void write(AugmentedString value) throws IOException {
-        if(isInferred)
-    		stream.write(value.getBytes());
-        else {
-            inferenceEvidence = AugmentedString.concat(inferenceEvidence, value);
-            if(inferenceEvidence.containsNonNumeric("\n")) {
-                vectors = ColumnUtilities.createVectors(allocator, inferenceEvidence);
-                isInferred = true;
-                write(inferenceEvidence);
-            }
-        }
+        if(!getIsInferred())
+            addInferenceEvidence(value);
+        else if(!getIsVectorFull())
+            addToVector(value);
+        else
+            writeVector(value);
 	}
+
+    private void addToVector(AugmentedString value) {
+        vector.getMutator().set(value);
+    }
+    private void writeVector(AugmentedString value) throws IOException {
+        //stream.write(vector);
+        //vector.clear();
+        //write(value);
+    }
+
+    private void addInferenceEvidence(AugmentedString value) throws IOException  {
+        inferenceEvidence = AugmentedString.concat(inferenceEvidence, value);
+        if(inferenceEvidence.containsNonNumeric("\n")) {
+            vector = ColumnUtilities.createVector(inferenceEvidence);
+            write(inferenceEvidence);
+        }
+    }
 
 	@Override
 	public void write(@Nonnull byte[] b) throws IOException {

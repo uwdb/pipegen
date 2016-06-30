@@ -193,6 +193,20 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     private boolean hasCollapsed() { return decoratedString != null; }
     public Object[] getState() { return state; }
 
+    public boolean isDelimiter(int index) { return state[index].equals(",") || state[index].equals(','); }
+    public boolean isNewline(int index) { return state[index].equals("\n") || state[index].equals('\n'); }
+    public boolean isLong(int index) { return state[index].equals(LONG) || state[index] instanceof Long; }
+    public boolean isInteger(int index) { return state[index].equals(INTEGER) || state[index] instanceof Integer; }
+    public boolean isByte(int index) { return state[index].equals(BYTE) || state[index] instanceof Byte; }
+    public boolean isFloat(int index) { return state[index].equals(FLOAT) || state[index] instanceof Float; }
+    public boolean isDouble(int index) { return state[index].equals(DOUBLE) || state[index] instanceof Double; }
+
+    public long getLong(int index) { return state[index] instanceof Long ? (long)state[index] : longState[index]; }
+    public int getInteger(int index) { return state[index] instanceof Integer ? (int)state[index] : intState[index]; }
+    public byte getByte(int index) { return state[index] instanceof Byte ? (byte)state[index] : byteState[index]; }
+    public float getFloat(int index) { return state[index] instanceof Float ? (float)state[index] : floatState[index]; }
+    public double getDouble(int index) { return state[index] instanceof Double ? (double)state[index] : doubleState[index]; }
+
 
     @Override
     public int length() {

@@ -2,23 +2,32 @@ package org.brandonhaynes.pipegen.utilities;
 
 import com.google.common.collect.Lists;
 import org.apache.arrow.memory.BufferAllocator;
+import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.ValueVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.types.MaterializedField;
 import org.apache.arrow.vector.types.Types;
+import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
 public class ColumnUtilities {
-    public static List<ValueVector> createVectors(BufferAllocator allocator, AugmentedString evidence) {
-        return createVectors(allocator, inferSchema(evidence));
+    private static final BufferAllocator defaultAllocator =
+            new RootAllocator(RuntimeConfiguration.getInstance().getBufferAllocationSize());
+
+    public static CompositeVector createVector(AugmentedString evidence) {
+        return createVector(defaultAllocator, evidence);
     }
 
-    public static List<ValueVector> createVectors(BufferAllocator allocator, List<Type> types) {
+    public static CompositeVector createVector(BufferAllocator allocator, AugmentedString evidence) {
+        return new CompositeVector(createVectors(allocator, inferSchema(evidence)));
+    }
+
+    private static List<ValueVector> createVectors(BufferAllocator allocator, List<Type> types) {
         int index = 0;
         List<ValueVector> vectors = Lists.newArrayList();
 
