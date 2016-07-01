@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import com.google.common.collect.Lists;
+import io.netty.buffer.ArrowBuf;
 import org.apache.arrow.memory.OutOfMemoryException;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.holders.Float8Holder;
@@ -9,10 +10,13 @@ import org.apache.arrow.vector.holders.ValueHolder;
 import org.apache.arrow.vector.holders.VarCharHolder;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CompositeVector {
+    private static final ArrowBuf[] emptyArrowBufArray = new ArrowBuf[0];
+
     private final List<ValueVector> vectors;
     private final Mutator mutator;
     private final Accessor accessor;
@@ -26,7 +30,7 @@ public class CompositeVector {
         this(Lists.newArrayList(vectors));
     }
 
-    public CompositeVector(List<ValueVector> vectors) {
+    CompositeVector(List<ValueVector> vectors) {
         if(vectors.size() == 0)
             throw new IllegalArgumentException("Composite must contain at least one vector.");
 
@@ -48,6 +52,23 @@ public class CompositeVector {
         });
     }
 
+    public ArrowBuf[] getBuffers(boolean clear) {
+        return vectors.stream()
+                      .map(CompositeVector::ensureVarCharWriterIndex)
+                      .flatMap(v -> Arrays.stream(v.getBuffers(clear)))
+                      .collect(Collectors.toList())
+                      .toArray(emptyArrowBufArray);
+    }
+
+    /**
+     * Set the writer index for varchar vectors, which don't seem to expose a write lengths when calling getBuffers()
+     */
+    private static ValueVector ensureVarCharWriterIndex(ValueVector vector) {
+        if(vector instanceof VarCharVector)
+           vector.getBuffers(false)[1].writerIndex(((VarCharVector)vector).getVarByteLength());
+        return vector;
+    }
+
     public class Mutator implements ValueVector.Mutator {
         private final List<ValueVector.Mutator> mutators = vectors.stream().map(ValueVector::getMutator)
                                                                            .collect(Collectors.toList());
@@ -64,6 +85,7 @@ public class CompositeVector {
 
         @Override
         @Deprecated
+        @SuppressWarnings("deprecation")
         public void generateTestData(int i) {
             mutators.stream().forEach(m -> m.generateTestData(i));
         }
@@ -88,14 +110,17 @@ public class CompositeVector {
 
         public void set(int index, int value) {
             ((IntVector.Mutator)mutators.get(nextColumn())).set(index, value);
+            mutators.get(column).setValueCount(index + 1);
         }
 
         public void set(int index, double value) {
             ((Float8Vector.Mutator)mutators.get(nextColumn())).set(index, value);
+            mutators.get(column).setValueCount(index + 1);
         }
 
         public void set(int index, String value) {
             ((VarCharVector.Mutator)mutators.get(nextColumn())).setSafe(index, value.getBytes());
+            mutators.get(column).setValueCount(index + 1);
         }
 
         public void set(int value) {

@@ -1,5 +1,6 @@
 package org.brandonhaynes.pipegen.support;
 
+import io.netty.buffer.ArrowBuf;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.Float8Vector;
@@ -10,6 +11,10 @@ import org.apache.arrow.vector.types.Types;
 
 public class VectorFactories {
     private static final BufferAllocator allocator = new RootAllocator(1024 * 1024);
+
+    public static ArrowBuf createBuffer(int size) {
+        return allocator.buffer(size);
+    }
 
     public static IntVector createIntegerVector() {
         return new IntVector(MaterializedField.create("column",

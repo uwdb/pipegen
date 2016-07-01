@@ -1,5 +1,7 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.netty.buffer.ArrowBuf;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
@@ -16,9 +18,12 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static org.brandonhaynes.pipegen.utilities.StreamUtilities.convertInteger;
+
 public class InterceptedFileOutputStream extends FileOutputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
     private static final int VECTOR_LIMIT = 4096;
+    private static final int VARCHAR_SIZE = 1024;
 
 	public static FileOutputStream intercept(String filename) throws IOException {
 		return RuntimeConfiguration.getInstance().getFilenamePattern().matcher(filename).matches()
@@ -64,7 +69,16 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 		new InterceptMetadata(filename).write(this.stream);
 	}
 
-    public CompositeVector getVector() { return vector; }
+    @VisibleForTesting
+    InterceptedFileOutputStream(OutputStream stream) throws IOException {
+        super(nullDescriptor);
+        this.filename = null;
+        this.entry = null;
+        this.socket = null;
+        this.stream = stream;
+    }
+
+    CompositeVector getVector() { return vector; }
     private boolean getIsInferred() { return vector != null; }
     private boolean getIsVectorFull() { return vector.getAccessor().getValueCount() > VECTOR_LIMIT; }
 
@@ -81,15 +95,23 @@ public class InterceptedFileOutputStream extends FileOutputStream {
         vector.getMutator().set(value);
     }
     private void writeVector(AugmentedString value) throws IOException {
-        //stream.write(vector);
-        //vector.clear();
-        //write(value);
+        ArrowBuf[] buffers = vector.getBuffers(false);
+
+        stream.write(convertInteger(buffers.length));
+        for(ArrowBuf buffer: buffers) {
+            stream.write(convertInteger(buffer.readableBytes()));
+            buffer.getBytes(0, stream, buffer.readableBytes());
+        }
+
+        if(value != null)
+            write(value);
     }
 
     private void addInferenceEvidence(AugmentedString value) throws IOException  {
         inferenceEvidence = AugmentedString.concat(inferenceEvidence, value);
         if(inferenceEvidence.containsNonNumeric("\n")) {
             vector = ColumnUtilities.createVector(inferenceEvidence);
+            vector.allocateNew(VARCHAR_SIZE, VECTOR_LIMIT);
             write(inferenceEvidence);
         }
     }
@@ -113,14 +135,19 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 
 	@Override
 	public void flush() throws IOException {
+        writeVector(null);
 		stream.flush();
 	}
 
 	@Override
 	public void	close() throws IOException {
+        if(!getIsInferred())
+            write(AugmentedString.newline);
+        flush();
 		super.close();
 		stream.close();
-		socket.close();
+        if(socket != null)
+    		socket.close();
 	}
 
 	@Override
@@ -134,6 +161,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
     public FileChannel getChannel() {
 		return super.getChannel();
 	}
+
 
 	//@Override
 	//public FileDescriptor getFD() {
