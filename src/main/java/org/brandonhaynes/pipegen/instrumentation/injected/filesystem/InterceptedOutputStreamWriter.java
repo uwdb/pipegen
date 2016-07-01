@@ -2,6 +2,8 @@ package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -42,23 +44,24 @@ public class InterceptedOutputStreamWriter extends OutputStreamWriter {
     }
 
     @Override
-    public void write(char[] chars) throws IOException {
+    public void write(@Nonnull char[] chars) throws IOException {
         outputStream.write(new AugmentedString(chars));
     }
 
     @Override
-    public void write(char[] chars, int i, int i1) throws IOException {
+    public void write(@Nonnull char[] chars, int i, int i1) throws IOException {
         outputStream.write(new AugmentedString(Arrays.copyOfRange(chars, i, i1)));
     }
 
     @Override
-    public void write(String s) throws IOException {
+    public void write(@Nullable String s) throws IOException {
         outputStream.write(new AugmentedString(s));
     }
 
     @Override
-    public void write(String s, int i, int i1) throws IOException {
-        outputStream.write(new AugmentedString(s.substring(i, i1)));
+    public void write(@Nullable String s, int i, int i1) throws IOException {
+        if(s != null)
+            outputStream.write(new AugmentedString(s.substring(i, i1)));
     }
 
     @Override

@@ -54,11 +54,11 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
 
     public AugmentedString(String s) {
         this((Object)s);
-        decoratedString = s;
+        decoratedString = s instanceof AugmentedString ? ((AugmentedString)s).decoratedString : s;
     }
 
     public AugmentedString(Object o) {
-        this.state = new Object[] {o};
+        this.state = o instanceof AugmentedString ? ((AugmentedString)o).state : new Object[] {o};
     }
 
     public AugmentedString(Object... state) {
