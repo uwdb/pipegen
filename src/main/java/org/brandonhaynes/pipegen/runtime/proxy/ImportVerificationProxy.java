@@ -1,7 +1,7 @@
 package org.brandonhaynes.pipegen.runtime.proxy;
 
+import com.google.common.collect.Lists;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
-import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectory;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 
@@ -61,7 +61,7 @@ public class ImportVerificationProxy implements VerificationProxy, Runnable {
 
         try(Socket socket = new Socket(entry.getHostname(), entry.getPort())) {
             try(OutputStream stream = socket.getOutputStream()) {
-                new InterceptMetadata(entry.getSystemName()).write(stream);
+                new InterceptMetadata(entry.getSystemName(), Lists.newArrayList()).write(stream);
 
                 log.info(String.format("Sending %s to importer", entry.getSystemName()));
 

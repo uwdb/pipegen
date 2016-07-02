@@ -66,7 +66,6 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 		this.entry = new WorkerDirectoryClient(InterceptUtilities.getSystemName(filename)).registerExport();
 		this.socket = new Socket(entry.getHostname(), entry.getPort());
 		this.stream = this.socket.getOutputStream();
-		new InterceptMetadata(filename).write(this.stream);
 	}
 
     @VisibleForTesting
@@ -112,6 +111,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
         if(inferenceEvidence.containsNonNumeric("\n")) {
             vector = ColumnUtilities.createVector(inferenceEvidence);
             vector.allocateNew(VARCHAR_SIZE, VECTOR_LIMIT);
+            new InterceptMetadata(filename, vector.getClasses()).write(this.stream);
             write(inferenceEvidence);
         }
     }

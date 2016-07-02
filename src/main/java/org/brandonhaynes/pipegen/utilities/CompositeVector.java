@@ -60,6 +60,10 @@ public class CompositeVector {
                       .toArray(emptyArrowBufArray);
     }
 
+    public List<Class<?>> getClasses() {
+        return vectors.stream().map(ValueVector::getClass).collect(Collectors.toList());
+    }
+
     /**
      * Set the writer index for varchar vectors, which don't seem to expose a write lengths when calling getBuffers()
      */

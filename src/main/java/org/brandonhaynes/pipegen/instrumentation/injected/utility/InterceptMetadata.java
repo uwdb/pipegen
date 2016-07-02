@@ -1,17 +1,29 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.utility;
 
+import org.apache.zookeeper.server.ByteBufferInputStream;
+
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class InterceptMetadata implements Serializable {
     private static final long serialVersionUID = 1;
 
-    public String filename;
+    public final String filename;
+    public final Class<?>[] vectorClasses;
 
-    public InterceptMetadata(String filename) {
-        this.filename = Paths.get(System.getProperty("user.dir")).resolve(resolveFilename(filename)).toString();
+    public InterceptMetadata(String filename, List<Class<?>> vectorClasses) {
+        this(filename, vectorClasses.toArray(new Class<?>[vectorClasses.size()]));
+    }
+
+    public InterceptMetadata(String filename, Class<?>[] vectorClasses) {
+        this.filename = filename != null
+                ? Paths.get(System.getProperty("user.dir")).resolve(resolveFilename(filename)).toString()
+                : null;
+        this.vectorClasses = vectorClasses;
     }
 
     public void write(OutputStream stream) throws IOException {
@@ -28,6 +40,10 @@ public class InterceptMetadata implements Serializable {
                 throw new IOException(e);
             }
         }
+    }
+
+    public static InterceptMetadata read(ByteBuffer buffer) throws IOException {
+        return read(new ByteBufferInputStream(buffer));
     }
 
     private static String resolveFilename(String filename) {

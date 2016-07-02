@@ -1,5 +1,6 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtilities;
@@ -51,20 +52,26 @@ public class InterceptedFileInputStream extends FileInputStream {
 	public InterceptedFileInputStream(String filename) throws IOException {
         super(nullDescriptor);
         this.filename = filename;
-//		try {
-			this.serverSocket = new ServerSocket(0);
-			this.entry = new WorkerDirectoryClient(InterceptUtilities.getSystemName(filename)).registerImport(
-					serverSocket.getInetAddress().getHostName(), serverSocket.getLocalPort());
-			this.socket = this.serverSocket.accept();
-			this.stream = this.socket.getInputStream();
-			//this.stream = WorkerDirectoryClient.connectImport(entry);
-			InterceptMetadata.read(this.stream);
-//		} catch(Exception e) {
-//			throw new IOException(e);
-//		}
+		this.serverSocket = new ServerSocket(0);
+		this.entry = new WorkerDirectoryClient(InterceptUtilities.getSystemName(filename)).registerImport(
+				serverSocket.getInetAddress().getHostName(), serverSocket.getLocalPort());
+		this.socket = this.serverSocket.accept();
+		this.stream = this.socket.getInputStream();
+		InterceptMetadata.read(this.stream);
 	}
 
-    @Override
+	@VisibleForTesting
+	InterceptedFileInputStream(InputStream stream) throws IOException {
+		super(nullDescriptor);
+		this.filename = null;
+		this.serverSocket = null;
+		this.entry = null;
+		this.socket = null;
+		this.stream = stream;
+		InterceptMetadata.read(this.stream);
+	}
+
+	@Override
 	public int available() throws IOException {
 		return stream.available();
 	}
