@@ -30,6 +30,7 @@ public class RuntimeConfiguration {
         builder.environment().put(verificationEnvironmentVariableName, Boolean.toString(verificationMode));
     }
 
+    public boolean isOptimized() { return true; }
     public long getBufferAllocationSize() { return BaseValueVector.INITIAL_VALUE_ALLOCATION * 1024; }
     public Pattern getFilenamePattern() { return filenamePattern; }
     public URI getWorkerDirectoryUri() { return workerDirectoryUri; }

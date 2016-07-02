@@ -12,7 +12,6 @@ import org.apache.arrow.vector.types.Types;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class ColumnUtilities {
@@ -23,32 +22,40 @@ public class ColumnUtilities {
         return createVector(defaultAllocator, evidence);
     }
 
-    public static CompositeVector createVector(BufferAllocator allocator, AugmentedString evidence) {
+    public static CompositeVector createVector(Class<?>[] classes) {
+        return createVector(Lists.newArrayList(classes));
+    }
+
+    public static CompositeVector createVector(List<Class<?>> classes) {
+        return new CompositeVector(createVectors(defaultAllocator, classes));
+    }
+
+    private static CompositeVector createVector(BufferAllocator allocator, AugmentedString evidence) {
         return new CompositeVector(createVectors(allocator, inferSchema(evidence)));
     }
 
-    private static List<ValueVector> createVectors(BufferAllocator allocator, List<Type> types) {
+    private static List<ValueVector> createVectors(BufferAllocator allocator, List<Class<?>> classes) {
         int index = 0;
         List<ValueVector> vectors = Lists.newArrayList();
 
-        for(Type type: types)
-            if(type == Long.class)
+        for(Class<?> clazz: classes)
+            if(clazz == Long.class || clazz == IntVector.class)
                 vectors.add(new IntVector(MaterializedField.create("column" + index++,
                         new Types.MajorType(Types.MinorType.INT, Types.DataMode.REQUIRED)), allocator));
-            else if(type == Double.class)
+            else if(clazz == Double.class || clazz == Float8Vector.class)
                 vectors.add(new Float8Vector(MaterializedField.create("column" + index++,
                         new Types.MajorType(Types.MinorType.FLOAT8, Types.DataMode.REQUIRED)), allocator));
-            else if(type == String.class)
+            else if(clazz == String.class || clazz == VarCharVector.class)
                 vectors.add(new VarCharVector(MaterializedField.create("column" + index++,
                         new Types.MajorType(Types.MinorType.VARCHAR, Types.DataMode.REQUIRED)), allocator));
             else
-                throw new IllegalArgumentException(String.format("Unsupported vector type %s", type));
+                throw new IllegalArgumentException(String.format("Unsupported vector type %s", clazz));
 
         return vectors;
     }
 
-    public static List<Type> inferSchema(AugmentedString evidence) {
-        List<Type> types = Lists.newArrayList();
+    public static List<Class<?>> inferSchema(AugmentedString evidence) {
+        List<Class<?>> classes = Lists.newArrayList();
         List<AugmentedString> columns = Lists.newArrayList();
         AugmentedString currentColumn = AugmentedString.empty;
 
@@ -64,18 +71,19 @@ public class ColumnUtilities {
 
         for(AugmentedString s: columns) {
             if(tryParseLong(s))
-                types.add(Long.class);
+                classes.add(Long.class);
             else if(tryParseDouble(s))
-                types.add(Double.class);
+                classes.add(Double.class);
             else
-                types.add(String.class);
+                classes.add(String.class);
         }
 
-        return types;
+        return classes;
     }
 
     private static boolean tryParseLong(String value) {
         try {
+            //noinspection ResultOfMethodCallIgnored
             Long.parseLong(value);
             return true;
         } catch (NumberFormatException e) {
@@ -85,6 +93,7 @@ public class ColumnUtilities {
 
     private static boolean tryParseDouble(String value) {
         try {
+            //noinspection ResultOfMethodCallIgnored
             Double.parseDouble(value);
             return true;
         } catch (NumberFormatException e) {

@@ -26,6 +26,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
     private static final int VARCHAR_SIZE = 1024;
 
 	public static FileOutputStream intercept(String filename) throws IOException {
+        //TODO need to check runtime configuration here to use optimized or unoptimized versions
 		return RuntimeConfiguration.getInstance().getFilenamePattern().matcher(filename).matches()
 				? new InterceptedFileOutputStream(filename)
 				: new FileOutputStream(filename);
@@ -77,6 +78,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
         this.stream = stream;
     }
 
+    @VisibleForTesting
     CompositeVector getVector() { return vector; }
     private boolean getIsInferred() { return vector != null; }
     private boolean getIsVectorFull() { return vector.getAccessor().getValueCount() > VECTOR_LIMIT; }
