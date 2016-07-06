@@ -3,8 +3,7 @@ version: 51
 path: /home/bhaynes/research/pipegen/
 backupPath: /tmp/backup
 classPaths:
-  - target/production/
-  - target/test/
+  - target/
 instrumentation:
   port: 7780
   timeout: 60

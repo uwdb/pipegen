@@ -64,7 +64,6 @@ public class InterceptedFileOutputStreamTests {
     public void testVectorFlush() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
         InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
-        ArrowBuf offsets;
 
         iStream.write(new AugmentedString(123456789));
         iStream.write(new AugmentedString(','));
@@ -77,12 +76,10 @@ public class InterceptedFileOutputStreamTests {
 
         ByteBuffer buffer = ByteBuffer.wrap(stream.toByteArray());
         assert(InterceptMetadata.read(buffer) != null);
-        assert(buffer.getInt() == 4); // # buffers
 
-        assertColumn(buffer, 4, new Integer[] {123456789});
-        assertColumn(buffer, 8, new Double[] {987654321.5});
-        offsets = assertColumn(buffer, 8, new Integer[] {0, 3});
-        assertColumn(buffer, offsets, 3, new String[] {"foo"});
+        assertVector(buffer, 4, new Integer[] {123456789});
+        assertVector(buffer, 8, new Double[] {987654321.5});
+        assertVarCharVector(buffer, 3, new Integer[] {0, 3}, new String[] {"foo"});
 
         assert(!buffer.hasRemaining());
     }
@@ -91,7 +88,6 @@ public class InterceptedFileOutputStreamTests {
     public void testMultiRowVectorFlush() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
         InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
-        ArrowBuf offsets;
 
         iStream.write(new AugmentedString(123456789));
         iStream.write(new AugmentedString(','));
@@ -105,12 +101,10 @@ public class InterceptedFileOutputStreamTests {
 
         ByteBuffer buffer = ByteBuffer.wrap(stream.toByteArray());
         assert(InterceptMetadata.read(buffer) != null);
-        assert(buffer.getInt() == 4); // # buffers
 
-        assertColumn(buffer, 8, new Integer[] {123456789, 234567890});
-        assertColumn(buffer, 16, new Double[] {11111111.5, 22222222.5});
-        offsets = assertColumn(buffer, 12, new Integer[] {0, 3, 6});
-        assertColumn(buffer, offsets, 6, new String[] {"foo", "bar"});
+        assertVector(buffer, 8, new Integer[] {123456789, 234567890});
+        assertVector(buffer, 16, new Double[] {11111111.5, 22222222.5});
+        assertVarCharVector(buffer, 6, new Integer[] {0, 3, 6}, new String[] {"foo", "bar"});
 
         assert(!buffer.hasRemaining());
     }
@@ -126,9 +120,8 @@ public class InterceptedFileOutputStreamTests {
 
         ByteBuffer buffer = ByteBuffer.wrap(stream.toByteArray());
         assert(InterceptMetadata.read(buffer) != null);
-        assert(buffer.getInt() == 1); // # buffers
 
-        assertColumn(buffer, 4, new Integer[] {1234567890});
+        assertVector(buffer, 4, new Integer[] {1234567890});
     }
 
     @Test
@@ -142,18 +135,14 @@ public class InterceptedFileOutputStreamTests {
 
         ByteBuffer buffer = ByteBuffer.wrap(stream.toByteArray());
         assert(InterceptMetadata.read(buffer) != null);
-        assert(buffer.getInt() == 1); // # buffers
 
-        assertColumn(buffer, 8, new Double[] {1234567890.5});
+        assertVector(buffer, 8, new Double[] {1234567890.5});
 
         assert(!buffer.hasRemaining());
     }
 
-    static ArrowBuf assertColumn(ByteBuffer buffer, int expectedSize, Object[] values) {
-        return assertColumn(buffer, null, expectedSize, values);
-    }
-
-    static ArrowBuf assertColumn(ByteBuffer buffer, ArrowBuf offsets, int expectedSize, Object[] values) {
+    static ArrowBuf assertVector(ByteBuffer buffer, int expectedSize, Object[] values) {
+        assert(buffer.getInt() == values.length);
         assert(buffer.getInt() == expectedSize);
 
         ArrowBuf arrow = readIntoArrowBuffer(buffer, expectedSize);
@@ -165,9 +154,27 @@ public class InterceptedFileOutputStreamTests {
                 assert (values[index].equals(arrow.getFloat(index * Float.BYTES)));
             else if(values.getClass().getComponentType() == Double.class)
                 assert (values[index].equals(arrow.getDouble(index * Double.BYTES)));
-            else if(values.getClass().getComponentType() == String.class)
-                assert (values[index].equals(getString(arrow, offsets.getInt(index * Integer.BYTES),
-                        offsets.getInt(index * Integer.BYTES + 4))));
+            else
+                throw new IllegalStateException("Unsupported vector type");
+
+        return arrow;
+    }
+
+    static ArrowBuf assertVarCharVector(ByteBuffer buffer, int expectedSize, Integer[] offsets, Object[] values) {
+        assert(buffer.getInt() == values.length);
+
+        assert(buffer.getInt() == offsets.length * Integer.BYTES);
+
+        ArrowBuf offsetBuffer = readIntoArrowBuffer(buffer, offsets.length * Integer.BYTES);
+        for(int index = 0; index < offsets.length; index++)
+            assert (offsets[index].equals(offsetBuffer.getInt(index * Integer.BYTES)));
+
+        assert(buffer.getInt() == expectedSize);
+
+        ArrowBuf arrow = readIntoArrowBuffer(buffer, expectedSize);
+        for(int index = 0; index < values.length; index++)
+            assert (values[index].equals(getString(arrow, offsetBuffer.getInt(index * Integer.BYTES),
+                    offsetBuffer.getInt(index * Integer.BYTES + 4))));
 
         return arrow;
     }

@@ -9,6 +9,7 @@ import java.lang.String;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
+@SuppressWarnings("unused")
 public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.injected.java.String {
     private String decoratedString = null;
     private Object[] state;
@@ -17,6 +18,7 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     public static final AugmentedString empty = new AugmentedString();
     public static final AugmentedString newline = new AugmentedString('\n');
 
+    // Called dynamically via injection
     public static AugmentedString decorate(short i) {
         return new AugmentedString(i);
     }
@@ -35,7 +37,8 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     public static AugmentedString decorate(double d) {
         return new AugmentedString(d);
     }
-    static AugmentedString decorate(Object o) { return new AugmentedString(o); }
+    @SuppressWarnings("WeakerAccess")
+    public static AugmentedString decorate(Object o) { return new AugmentedString(o); }
 
     public static AugmentedString concat(AugmentedString left, Object right) {
         if(right instanceof AugmentedString)

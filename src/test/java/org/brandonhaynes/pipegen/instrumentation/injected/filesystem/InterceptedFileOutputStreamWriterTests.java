@@ -1,6 +1,5 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
-import io.netty.buffer.ArrowBuf;
 import org.apache.arrow.vector.Float8Vector;
 import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.VarCharVector;
@@ -12,7 +11,8 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-import static org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStreamTests.assertColumn;
+import static org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStreamTests.assertVarCharVector;
+import static org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStreamTests.assertVector;
 
 public class InterceptedFileOutputStreamWriterTests {
     @Test
@@ -34,7 +34,6 @@ public class InterceptedFileOutputStreamWriterTests {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
         InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
         InterceptedOutputStreamWriter writer = new InterceptedOutputStreamWriter(iStream);
-        ArrowBuf offsets;
 
         writer.write(new AugmentedString(1));
         writer.write(new AugmentedString(','));
@@ -47,12 +46,10 @@ public class InterceptedFileOutputStreamWriterTests {
 
         ByteBuffer buffer = ByteBuffer.wrap(stream.toByteArray());
         assert(InterceptMetadata.read(buffer) != null);
-        assert(buffer.getInt() == 4); // # buffers
 
-        assertColumn(buffer, 4, new Integer[] {1});
-        assertColumn(buffer, 8, new Double[] {1.5});
-        offsets = assertColumn(buffer, 8, new Integer[] {0, 3});
-        assertColumn(buffer, offsets, 3, new String[] {"foo"});
+        assertVector(buffer, 4, new Integer[] {1});
+        assertVector(buffer, 8, new Double[] {1.5});
+        assertVarCharVector(buffer, 3, new Integer[] {0, 3}, new String[] {"foo"});
 
         assert(!buffer.hasRemaining());
     }
