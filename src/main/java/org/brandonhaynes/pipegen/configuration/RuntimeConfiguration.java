@@ -31,7 +31,9 @@ public class RuntimeConfiguration {
     }
 
     public boolean isOptimized() { return true; }
-    public long getBufferAllocationSize() { return BaseValueVector.INITIAL_VALUE_ALLOCATION * 1024; }
+    public int getVarCharSize() { return 1024; }
+    public int getVectorSize() { return 4096; }
+    public int getBufferAllocationSize() { return BaseValueVector.INITIAL_VALUE_ALLOCATION * 1024; }
     public Pattern getFilenamePattern() { return filenamePattern; }
     public URI getWorkerDirectoryUri() { return workerDirectoryUri; }
     public boolean isInVerificationMode() {

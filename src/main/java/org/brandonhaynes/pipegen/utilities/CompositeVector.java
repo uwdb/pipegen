@@ -1,7 +1,6 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import com.google.common.collect.Lists;
-import io.netty.buffer.ArrowBuf;
 import org.apache.arrow.memory.OutOfMemoryException;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.holders.Float8Holder;
@@ -10,21 +9,20 @@ import org.apache.arrow.vector.holders.ValueHolder;
 import org.apache.arrow.vector.holders.VarCharHolder;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CompositeVector {
-    private static final ArrowBuf[] emptyArrowBufArray = new ArrowBuf[0];
-
     private final List<ValueVector> vectors;
     private final Mutator mutator;
     private final Accessor accessor;
+    private final Reader reader = new Reader();
     private int index = 0, column = 0;
 
     public List<ValueVector> getVectors() { return vectors; }
     public Mutator getMutator() { return mutator; }
     public Accessor getAccessor() { return accessor; }
+    public Reader getReader() { return reader; }
 
     public CompositeVector(ValueVector... vectors) {
         this(Lists.newArrayList(vectors));
@@ -35,8 +33,8 @@ public class CompositeVector {
             throw new IllegalArgumentException("Composite must contain at least one vector.");
 
         this.vectors = vectors;
-        this.accessor = new Accessor();
         this.mutator = new Mutator();
+        this.accessor = new Accessor();
     }
 
     public void allocateNew() throws OutOfMemoryException {
@@ -49,28 +47,14 @@ public class CompositeVector {
                 ((FixedWidthVector) v).allocateNew(valueCount);
             else if(v instanceof VariableWidthVector)
                 ((VariableWidthVector) v).allocateNew(totalBytes, valueCount);
+            else
+                throw new UnsupportedOperationException(String.format("Allocation of vector type %s not implemented",
+                                                                      v.getClass()));
         });
-    }
-
-    public ArrowBuf[] getBuffers(boolean clear) {
-        return vectors.stream()
-                      .map(CompositeVector::ensureVarCharWriterIndex)
-                      .flatMap(v -> Arrays.stream(v.getBuffers(clear)))
-                      .collect(Collectors.toList())
-                      .toArray(emptyArrowBufArray);
     }
 
     public List<Class<?>> getClasses() {
         return vectors.stream().map(ValueVector::getClass).collect(Collectors.toList());
-    }
-
-    /**
-     * Set the writer index for varchar vectors, which don't seem to expose a write lengths when calling getBuffers()
-     */
-    private static ValueVector ensureVarCharWriterIndex(ValueVector vector) {
-        if(vector instanceof VarCharVector)
-           vector.getBuffers(false)[1].writerIndex(((VarCharVector)vector).getVarByteLength());
-        return vector;
     }
 
     public class Mutator implements ValueVector.Mutator {
@@ -162,8 +146,8 @@ public class CompositeVector {
         }
 
         @Override
-        public List<Object> getObject(int index) {
-            return accessors.stream().map(a -> a.getObject(index)).collect(Collectors.toList());
+        public Object[] getObject(int index) {
+            return accessors.stream().map(a -> a.getObject(index)).toArray();
         }
 
         public Object get(int column, int index) {
@@ -185,5 +169,21 @@ public class CompositeVector {
             for(ValueHolder holder: holders)
                 get(index, column++, holder);
         }
+    }
+
+    public class Reader {
+        private int position = 0;
+
+        public AugmentedString read(int index) {
+            return new AugmentedString(accessor.getObject(index));
+        }
+
+        public AugmentedString read() {
+            return read(position++);
+        }
+
+        public boolean hasRemaining() { return position < accessor.getValueCount(); }
+        public int getPosition() { return position; }
+        public void reset() { position = 0; }
     }
 }

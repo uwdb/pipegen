@@ -48,6 +48,15 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
         return new AugmentedString(ArrayUtilities.concat(left.state, right.state));
     }
 
+    public static AugmentedString separate(AugmentedString value, char delimiter, char suffix) {
+        Object[] state = new Object[value.state.length * 2];
+        for(int i = 0; i < value.state.length; i++) {
+            state[2 * i] = value.state[i];
+            state[2 * i + 1] = i + 1 < value.state.length ? delimiter : suffix;
+        }
+        return new AugmentedString(state);
+    }
+
     public AugmentedString() {
         this.state = emptyObjectArray;
     }
