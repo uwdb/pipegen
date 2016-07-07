@@ -10,6 +10,7 @@ import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 import org.brandonhaynes.pipegen.utilities.ColumnUtilities;
 import org.brandonhaynes.pipegen.utilities.CompositeVector;
 import org.brandonhaynes.pipegen.utilities.StreamUtilities;
+import org.brandonhaynes.pipegen.utilities.StringUtilities;
 
 import javax.annotation.Nonnull;
 import java.io.FileDescriptor;
@@ -22,6 +23,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static org.brandonhaynes.pipegen.utilities.StringUtilities.intersperse;
 
 public class InterceptedFileInputStream extends FileInputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
@@ -55,8 +58,9 @@ public class InterceptedFileInputStream extends FileInputStream {
     private final CompositeVector vector;
     private final byte[] buffer = new byte[RuntimeConfiguration.getInstance().getBufferAllocationSize()];
     private ByteBuffer pendingBuffer = emptyBuffer;
+    private boolean isEOFDetected = false;
 
-	public InterceptedFileInputStream(String filename) throws IOException {
+    public InterceptedFileInputStream(String filename) throws IOException {
         super(nullDescriptor);
         this.filename = filename;
 		this.serverSocket = new ServerSocket(0);
@@ -172,16 +176,26 @@ public class InterceptedFileInputStream extends FileInputStream {
 		return stream.skip(n);
 	}
 
+	AugmentedString readLine() throws IOException {
+        if(isEOF())
+            return null;
+        else if(!pendingBuffer.hasRemaining())
+            return vector.getReader().read();
+        else
+            return new AugmentedString(StringUtilities.toString(pendingBuffer));
+    }
+
+    private boolean isEOF() throws IOException {
+        return isEOFDetected ||
+               (!pendingBuffer.hasRemaining() &&
+                !vector.getReader().hasRemaining() &&
+                (isEOFDetected = !StreamUtilities.readVectors(stream, vector, buffer)));
+    }
+
     private ByteBuffer getBuffer() throws IOException {
-        if(pendingBuffer != null && !pendingBuffer.hasRemaining()) {
-            if(!vector.getReader().hasRemaining())
-                if (!StreamUtilities.readVectors(stream, vector, buffer))
-                    pendingBuffer = null;
-            if (pendingBuffer != null)
-                pendingBuffer = ByteBuffer.wrap(AugmentedString.separate(vector.getReader().read(), ',', '\n').getBytes());
-        }
-        return pendingBuffer != null
-                ? pendingBuffer
-                : emptyBuffer;
+        if(!isEOF() && !pendingBuffer.hasRemaining())
+            pendingBuffer = ByteBuffer.wrap(intersperse(vector.getReader().read(), ',', '\n').getBytes());
+
+        return !isEOF() ? pendingBuffer : emptyBuffer;
     }
 }
