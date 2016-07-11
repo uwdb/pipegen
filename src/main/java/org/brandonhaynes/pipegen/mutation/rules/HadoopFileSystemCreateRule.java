@@ -13,12 +13,14 @@ import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
 import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemExport;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
-import org.brandonhaynes.pipegen.utilities.JarUpdater;
+import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.logging.Logger;
+
+import static org.brandonhaynes.pipegen.utilities.ClassUtilities.getPipeGenDependencies;
 
 public class HadoopFileSystemCreateRule implements Rule {
     private static final Logger log = Logger.getLogger(HadoopFileSystemCreateRule.class.getName());
@@ -65,10 +67,10 @@ public class HadoopFileSystemCreateRule implements Rule {
     private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
         for (URL url : task.getConfiguration().findClasses(frame.getClassName())) {
             log.info(String.format("Modifying call sites in %s", url));
-            JarUpdater.replaceClasses(
+            JarUtilities.replaceClasses(
                     url,
                     task.getConfiguration().getClassPool(),
-                    InterceptedFileSystemExport.getDependencies(),
+                    getPipeGenDependencies(),
                     task.getConfiguration().getVersion(),
                     task.getConfiguration().getBackupPath());
 
@@ -97,8 +99,9 @@ public class HadoopFileSystemCreateRule implements Rule {
     }
 
     private String getUri(JsonNode node) {
-        String uri = node.get("state").get("uri").asText();
-        return !uri.isEmpty() && !uri.equals("null")
+        JsonNode uriNode = node.get("state").get("uri");
+        String uri = uriNode != null ? uriNode.asText() : null;
+        return uri != null && !uri.isEmpty() && !uri.equals("null")
                 ? uri
                 : null;
     }

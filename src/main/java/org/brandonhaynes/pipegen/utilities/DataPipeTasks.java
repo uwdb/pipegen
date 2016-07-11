@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
+import org.brandonhaynes.pipegen.configuration.OptimizationTask;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.Task;
 import org.brandonhaynes.pipegen.instrumentation.InstrumentationListener;
@@ -16,8 +17,9 @@ public class DataPipeTasks {
 
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
-        create(configuration.importTask);
-        //create(configuration.exportTask);
+        //create(configuration.importTask);
+        create(configuration.exportTask);
+        //optimize(configuration.exportOptimizationTask);
     }
 
     public static void create(Task task) throws IOException, InterruptedException, MonitorException {
@@ -28,8 +30,12 @@ public class DataPipeTasks {
         log.info("Done");
     }
 
-    private static boolean instrument(Task task)
+    private static void optimize(OptimizationTask task)
             throws IOException, MonitorException, InterruptedException {
+        DataPipeTasks.instrument(task);
+    }
+
+    private static boolean instrument(Task task) throws IOException, MonitorException, InterruptedException {
         HostListener listener = new InstrumentationListener(task);
         Process process = DataPipeTasks.test(task);
         listener.join();

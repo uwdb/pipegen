@@ -9,12 +9,14 @@ import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
 import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStream;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
-import org.brandonhaynes.pipegen.utilities.JarUpdater;
+import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Logger;
+
+import static org.brandonhaynes.pipegen.utilities.ClassUtilities.getPipeGenDependencies;
 
 public class FileOutputStreamRule implements Rule {
     private static final Logger log = Logger.getLogger(FileOutputStreamRule.class.getName());
@@ -62,9 +64,9 @@ public class FileOutputStreamRule implements Rule {
                 frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
                 targetExpression, template, task.getConfiguration().getClassPool(),
                 task.getConfiguration().getBackupPath());
-        JarUpdater.replaceClasses(task.getConfiguration().getClassPool().find(frame.getClassName()),
+        JarUtilities.replaceClasses(task.getConfiguration().getClassPool().find(frame.getClassName()),
                 task.getConfiguration().getClassPool(),
-                InterceptedFileOutputStream.getDependencies(),
+                getPipeGenDependencies(),
                 task.getConfiguration().getVersion(),
                 task.getConfiguration().getBackupPath());
         task.getModifiedCallSites().add(frame);

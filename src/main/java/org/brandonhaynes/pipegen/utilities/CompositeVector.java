@@ -1,6 +1,6 @@
 package org.brandonhaynes.pipegen.utilities;
 
-import com.google.common.collect.Lists;
+
 import org.apache.arrow.memory.OutOfMemoryException;
 import org.apache.arrow.vector.*;
 import org.apache.arrow.vector.holders.Float8Holder;
@@ -25,13 +25,10 @@ public class CompositeVector {
     public Reader getReader() { return reader; }
 
     public CompositeVector(ValueVector... vectors) {
-        this(Lists.newArrayList(vectors));
+        this(ArrayUtilities.newArrayList(vectors));
     }
 
     CompositeVector(List<ValueVector> vectors) {
-        if(vectors.size() == 0)
-            throw new IllegalArgumentException("Composite must contain at least one vector.");
-
         this.vectors = vectors;
         this.mutator = new Mutator();
         this.accessor = new Accessor();

@@ -13,7 +13,7 @@ import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
 import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemImport;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
-import org.brandonhaynes.pipegen.utilities.JarUpdater;
+import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.IOException;
 import java.net.URL;
@@ -64,7 +64,7 @@ public class HadoopFileSystemOpenRule implements Rule {
 
     private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
         for(URL url: task.getConfiguration().findClasses(frame.getClassName())) {
-            JarUpdater.replaceClasses(
+            JarUtilities.replaceClasses(
                     url,
                     task.getConfiguration().getClassPool(),
                     InterceptedFileSystemImport.getDependencies(),

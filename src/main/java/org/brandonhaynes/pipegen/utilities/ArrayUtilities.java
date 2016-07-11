@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import java.lang.reflect.Array;
+import java.util.*;
 
 public class ArrayUtilities {
     public static Object[] concat(Object[] left, Object right) {
@@ -109,5 +110,28 @@ public class ArrayUtilities {
         joined[left.length] = right;
 
         return joined;
+    }
+
+    /***
+     * Avoid dependency on Guava types
+     */
+    @SafeVarargs
+    public static <T> List<T> newArrayList(T... elements) {
+        List<T> list = new ArrayList<>(1);
+        Collections.addAll(list, elements);
+        return list;
+    }
+
+    public static <T> List<T> newArrayList(T element) {
+        List<T> list = new ArrayList<>(1);
+        list.add(element);
+        return list;
+    }
+
+    @SafeVarargs
+    public static <T> Queue<T> newArrayDeque(T... elements) {
+        Queue<T> queue = new ArrayDeque<>(1);
+        Collections.addAll(queue, elements);
+        return queue;
     }
 }

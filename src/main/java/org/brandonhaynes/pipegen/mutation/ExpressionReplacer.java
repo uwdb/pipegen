@@ -6,7 +6,7 @@ import javassist.expr.MethodCall;
 import javassist.expr.NewExpr;
 import org.brandonhaynes.pipegen.PipeGen;
 import org.brandonhaynes.pipegen.utilities.JarClassPath;
-import org.brandonhaynes.pipegen.utilities.JarUpdater;
+import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.IOException;
 import java.net.URL;
@@ -46,7 +46,7 @@ public class ExpressionReplacer {
             replaceExpression(targetClass.getDeclaredMethod(methodName), line, targetExpression, replacementExpression);
 
         if(targetClass.isModified())
-            JarUpdater.replaceClass(targetClass.getClassPool().find(targetClass.getName()), targetClass, backupPath);
+            JarUtilities.replaceClass(targetClass.getClassPool().find(targetClass.getName()), targetClass, backupPath);
     }
 
     private static void replaceExpression(CtConstructor[] constructors, int line,

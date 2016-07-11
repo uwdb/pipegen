@@ -17,6 +17,22 @@ public class ImportTracer {
 //    public static void OnToString(@Self Object self, AnyType[] args) {
 //        print("Entry:\n" + classOf(self) + "\n" + "\n" + "[]\n" + "{}\n" + jstackStr());
 //    }
+    @OnMethod(clazz="org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileInputStream",
+            method="<init>",
+            location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnInterceptedFileInputStream(@Self Object self, @TargetMethodOrField String method,
+                                                    @ProbeMethodName String probeMethod, AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
+
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
+        printFields(buffer, self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
 
 
     @OnMethod(clazz="+java.io.FileInputStream",

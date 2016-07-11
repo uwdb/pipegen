@@ -6,7 +6,7 @@ import javassist.CtClass;
 import javassist.NotFoundException;
 import org.brandonhaynes.pipegen.configuration.Version;
 import org.brandonhaynes.pipegen.utilities.JarClassPath;
-import org.brandonhaynes.pipegen.utilities.JarUpdater;
+import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.IOException;
 import java.net.URL;
@@ -29,7 +29,7 @@ public class ClassModifierReplacer {
             throws IOException, NotFoundException, CannotCompileException {
         cc.defrost();
         cc.setModifiers(modifiers);
-        JarUpdater.replaceClass(jarLocation, cc,
+        JarUtilities.replaceClass(jarLocation, cc,
                 new Version(cc.getClassFile2().getMajorVersion(), cc.getClassFile2().getMinorVersion()), null);
     }
 }

@@ -125,6 +125,18 @@ public class InterceptedFileOutputStreamTests {
     }
 
     @Test
+    public void testVectorEmptyFlush() throws Exception {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
+        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+
+        iStream.flush();
+
+        ByteBuffer buffer = ByteBuffer.wrap(stream.toByteArray());
+
+        assert(!buffer.hasRemaining());
+    }
+
+    @Test
     public void testCloseWithoutNewline() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
         InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
@@ -138,6 +150,19 @@ public class InterceptedFileOutputStreamTests {
 
         assertVector(buffer, 8, new Double[] {1234567890.5});
 
+        assert(!buffer.hasRemaining());
+    }
+
+    @Test
+    public void testEmptyClose() throws Exception {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
+        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+
+        iStream.close();
+
+        ByteBuffer buffer = ByteBuffer.wrap(stream.toByteArray());
+
+        assert(InterceptMetadata.read(buffer) != null);
         assert(!buffer.hasRemaining());
     }
 

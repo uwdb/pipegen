@@ -9,6 +9,7 @@ import javassist.ClassPool;
 import javassist.NotFoundException;
 import org.apache.commons.io.FileUtils;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
+import org.brandonhaynes.pipegen.mutation.rules.ExportOptimizationRule;
 import org.brandonhaynes.pipegen.mutation.rules.ExportRule;
 import org.brandonhaynes.pipegen.mutation.rules.ImportRule;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
@@ -44,6 +45,7 @@ public class CompileTimeConfiguration {
     public final DataPipeConfiguration datapipeConfiguration;
     public final ImportTask importTask;
     public final ExportTask exportTask;
+    public final ExportOptimizationTask exportOptimizationTask;
 
     public CompileTimeConfiguration(String filename) throws IOException {
         this(Paths.get(filename));
@@ -64,6 +66,7 @@ public class CompileTimeConfiguration {
         datapipeConfiguration = new DataPipeConfiguration(getChild(yaml, "datapipe", Map.class));
         importTask = new ImportTask(this);
         exportTask = new ExportTask(this);
+        exportOptimizationTask = new ExportOptimizationTask(this);
 
         try {
             pool = new ClassPool(false); // ClassPool.getDefault();
@@ -256,6 +259,21 @@ public class CompileTimeConfiguration {
         }
 
         public Script getExportScript() { return getTaskScript(); }
+        public VerificationProxy getVerificationProxy() { return proxy; }
+        public Rule getRule() { return rule; }
+    }
+
+    //TODO move these into top-level classes
+    private static class ExportOptimizationTask extends Task implements OptimizationTask {
+        private ExportVerificationProxy proxy;
+        private Rule rule;
+
+        private ExportOptimizationTask(CompileTimeConfiguration configuration) throws IOException {
+            super(configuration, configuration.datapipeConfiguration.getExportScript());
+            proxy = new ExportVerificationProxy(configuration.getBasePath());
+            rule = new ExportOptimizationRule(this);
+        }
+
         public VerificationProxy getVerificationProxy() { return proxy; }
         public Rule getRule() { return rule; }
     }

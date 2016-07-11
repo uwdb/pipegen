@@ -20,11 +20,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+import java.util.logging.Logger;
 
-public class JarUpdater {
+public class JarUtilities {
+    private static final Logger log = Logger.getLogger(JarUtilities.class.getName());
+
     public static void addClass(final JarFile jar, final CtClass cc, final Version version, final Path backupPath)
             throws CannotCompileException, IOException {
         String temporaryDirectory = System.getProperty("java.io.tmpdir");
@@ -86,6 +90,31 @@ public class JarUpdater {
         replaceFiles(jar, classes, backupPath);
     }
 
+    public static List<Class> getClasses(final String jarFilename, boolean throwOnResolutionFailure) {
+        try {
+            return getClasses(new JarFile(jarFilename), throwOnResolutionFailure);
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<Class> getClasses(final JarFile jar, boolean throwOnResolutionFailure) {
+        List<Class> classes = Lists.newArrayList();
+
+        for (JarEntry entry : getEntryIterator(jar))
+            if (entry.getName().endsWith(".class"))
+                try {
+                    classes.add(Class.forName(toQualifiedClass(entry.getName())));
+                } catch(ClassNotFoundException|NoClassDefFoundError e) {
+                    if(throwOnResolutionFailure)
+                        throw new RuntimeException(e);
+                    else
+                        log.info("Could not resolve class " + entry.getName());
+                }
+
+        return classes;
+    }
+
     private static synchronized void replaceFiles(final JarFile jar,
                                                   final Collection<CompiledClass> classes,
                                                   final Path backupPath) throws IOException {
@@ -131,6 +160,10 @@ public class JarUpdater {
 
     private static File toClassPath(CtClass cc) {
         return new File(cc.getClassFile2().getName().replace(".", File.separator) + ".class");
+    }
+
+    private static String toQualifiedClass(String classPath) {
+        return classPath.replace("/", ".").replace(".class", "");
     }
 
     private static Iterable<JarEntry> getEntryIterator(final JarFile jar) {

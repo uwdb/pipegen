@@ -1,6 +1,5 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.netty.buffer.ArrowBuf;
 import org.apache.arrow.vector.ValueVector;
 import org.apache.arrow.vector.VarCharVector;
@@ -17,8 +16,6 @@ import javax.annotation.Nonnull;
 import java.io.*;
 import java.net.Socket;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import static org.brandonhaynes.pipegen.utilities.StreamUtilities.convertInteger;
 
@@ -37,18 +34,6 @@ public class InterceptedFileOutputStream extends FileOutputStream {
                 ? new InterceptedFileOutputStream(file)
                 : new FileOutputStream(file);
     }
-
-	public static Collection<Class> getDependencies() {
-		return new ArrayList<Class>() {{
-			add(InterceptedFileOutputStream.class);
-			add(InterceptUtilities.class);
-			add(InterceptMetadata.class);
-			add(RuntimeConfiguration.class);
-			add(WorkerDirectoryClient.class);
-			add(WorkerDirectoryEntry.class);
-			add(WorkerDirectoryEntry.Direction.class);
-		}};
-	}
 
 	private final String filename;
 	private final Socket socket;
@@ -69,7 +54,6 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 		this.stream = this.socket.getOutputStream();
 	}
 
-    @VisibleForTesting
     InterceptedFileOutputStream(OutputStream stream) throws IOException {
         super(nullDescriptor);
         this.filename = null;
@@ -78,7 +62,6 @@ public class InterceptedFileOutputStream extends FileOutputStream {
         this.stream = stream;
     }
 
-    @VisibleForTesting
     CompositeVector getVector() { return vector; }
     private boolean getIsInferred() { return vector != null; }
     private boolean getIsVectorFull() {
@@ -146,7 +129,8 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 
 	@Override
 	public void flush() throws IOException {
-        writeVector(null);
+        if(vector != null)
+            writeVector(null);
 		stream.flush();
 	}
 

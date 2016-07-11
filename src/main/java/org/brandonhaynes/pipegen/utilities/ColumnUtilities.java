@@ -1,6 +1,5 @@
 package org.brandonhaynes.pipegen.utilities;
 
-import com.google.common.collect.Lists;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.Float8Vector;
@@ -12,7 +11,9 @@ import org.apache.arrow.vector.types.Types;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ColumnUtilities {
     private static final BufferAllocator defaultAllocator =
@@ -23,7 +24,7 @@ public class ColumnUtilities {
     }
 
     public static CompositeVector createVector(Class<?>[] classes) {
-        return createVector(Lists.newArrayList(classes));
+        return createVector(ArrayUtilities.newArrayList(classes));
     }
 
     public static CompositeVector createVector(List<Class<?>> classes) {
@@ -36,7 +37,7 @@ public class ColumnUtilities {
 
     private static List<ValueVector> createVectors(BufferAllocator allocator, List<Class<?>> classes) {
         int index = 0;
-        List<ValueVector> vectors = Lists.newArrayList();
+        List<ValueVector> vectors = new ArrayList<>(classes.size());
 
         for(Class<?> clazz: classes)
             if(clazz == Long.class || clazz == IntVector.class)
@@ -55,8 +56,8 @@ public class ColumnUtilities {
     }
 
     public static List<Class<?>> inferSchema(AugmentedString evidence) {
-        List<Class<?>> classes = Lists.newArrayList();
-        List<AugmentedString> columns = Lists.newArrayList();
+        List<Class<?>> classes = new ArrayList<>(evidence.getState().length);
+        List<AugmentedString> columns = new ArrayList<>(evidence.getState().length);
         AugmentedString currentColumn = AugmentedString.empty;
 
         for(Object v: evidence.getState())
@@ -69,7 +70,7 @@ public class ColumnUtilities {
             } else
                 currentColumn = AugmentedString.concat(currentColumn, v);
 
-        for(AugmentedString s: columns) {
+            for(AugmentedString s: columns.stream().filter(c -> !c.isEmpty()).collect(Collectors.toList())) {
             if(tryParseLong(s))
                 classes.add(Long.class);
             else if(tryParseDouble(s))

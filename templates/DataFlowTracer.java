@@ -29,40 +29,7 @@ public class ImportTracer {
 
         println(buffer.toString());
     }
-
-    @OnMethod(clazz="+java.io.FileOutputStream",
-            method="<init>") //,
-            //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
-    public static void OnFileOutputStream(@Self Object self, //@TargetMethodOrField String method),
-                                          //@ProbeMethodName String probeMethod,
-                                          AnyType[] args) {
-        StringBuilder buffer = new StringBuilder();
-
-        buffer.append("Entry:").append(LINE_SEPARATOR);
-        buffer.append(classOf(self)).append(LINE_SEPARATOR);
-        buffer.append(probeLine()).append(LINE_SEPARATOR);
-        printArray(buffer, args);
-        printFields(buffer, self);
-        jstack(buffer);
-
-        println(buffer.toString());
-    }
-
-    @OnMethod(clazz="org.apache.hadoop.fs.FileSystem",
-            method="create")
-    public static void OnHadoopFileSystemCreate(@Self Object self, AnyType[] args) {
-        StringBuilder buffer = new StringBuilder();
-
-        buffer.append("Entry:").append(LINE_SEPARATOR);
-        buffer.append(classOf(self)).append(LINE_SEPARATOR);
-        buffer.append(probeLine()).append(LINE_SEPARATOR);
-        printArray(buffer, args);
-        printFields(buffer, args[0] instanceof Path ? args[0] : self);
-        jstack(buffer);
-
-        println(buffer.toString());
-    }
-
+    
     //region Adapted from BTraceUtils / BTraceRuntime
 
     public static void printArray(StringBuilder buf, Object[] array) {

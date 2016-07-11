@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//TODO optimizer should defer to SootUtilities
 public class Optimizer {
     public static Scene optimize(CompileTimeConfiguration configuration, Collection<String> signatures) {
         return optimize(configuration, signatures, null);
