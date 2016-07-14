@@ -1,4 +1,4 @@
-package org.brandonhaynes.pipegen.mutation.rules;
+package org.brandonhaynes.pipegen.mutation.rules.datapipe;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -8,11 +8,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.brandonhaynes.pipegen.configuration.ExportTask;
+import org.brandonhaynes.pipegen.configuration.tasks.ExportTask;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
 import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemExport;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
+import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.IOException;
@@ -65,11 +66,11 @@ public class HadoopFileSystemCreateRule implements Rule {
     }
 
     private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
-        for (URL url : task.getConfiguration().findClasses(frame.getClassName())) {
+        for (URL url : task.getConfiguration().instrumentationConfiguration.findClasses(frame.getClassName())) {
             log.info(String.format("Modifying call sites in %s", url));
             JarUtilities.replaceClasses(
                     url,
-                    task.getConfiguration().getClassPool(),
+                    task.getConfiguration().instrumentationConfiguration.getClassPool(),
                     getPipeGenDependencies(),
                     task.getConfiguration().getVersion(),
                     task.getConfiguration().getBackupPath());

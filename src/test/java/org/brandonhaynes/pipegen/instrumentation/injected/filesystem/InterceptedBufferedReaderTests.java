@@ -14,7 +14,7 @@ public class InterceptedBufferedReaderTests {
         String line;
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
@@ -22,7 +22,7 @@ public class InterceptedBufferedReaderTests {
         BufferedReader inStream =
                 new InterceptedBufferedReader(
                         new InterceptedInputStreamReader(
-                            new InterceptedFileInputStream(
+                            new OptimizedInterceptedFileInputStream(
                                 new ByteArrayInputStream(stream.toByteArray()))));
 
         line = inStream.readLine();

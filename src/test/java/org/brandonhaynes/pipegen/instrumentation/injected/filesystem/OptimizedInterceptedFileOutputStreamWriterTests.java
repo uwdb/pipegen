@@ -11,15 +11,15 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-import static org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStreamTests.assertVarCharVector;
-import static org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStreamTests.assertVector;
+import static org.brandonhaynes.pipegen.instrumentation.injected.filesystem.OptimizedInterceptedFileOutputStreamTests.assertVarCharVector;
+import static org.brandonhaynes.pipegen.instrumentation.injected.filesystem.OptimizedInterceptedFileOutputStreamTests.assertVector;
 
-public class InterceptedFileOutputStreamWriterTests {
+public class OptimizedInterceptedFileOutputStreamWriterTests {
     @Test
     public void testSingleWrite() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
-        InterceptedOutputStreamWriter writer = new InterceptedOutputStreamWriter(iStream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
+        OptimizedInterceptedOutputStreamWriter writer = new OptimizedInterceptedOutputStreamWriter(iStream);
         writer.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
 
         CompositeVector vector = iStream.getVector();
@@ -32,8 +32,8 @@ public class InterceptedFileOutputStreamWriterTests {
     @Test
     public void testVectorFlush() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
-        InterceptedOutputStreamWriter writer = new InterceptedOutputStreamWriter(iStream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
+        OptimizedInterceptedOutputStreamWriter writer = new OptimizedInterceptedOutputStreamWriter(iStream);
 
         writer.write(new AugmentedString(1));
         writer.write(new AugmentedString(','));

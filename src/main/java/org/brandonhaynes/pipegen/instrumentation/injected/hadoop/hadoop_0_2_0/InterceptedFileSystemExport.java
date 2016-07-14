@@ -5,7 +5,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
-import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStream;
+import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.OptimizedInterceptedFileOutputStream;
 
 import java.io.IOException;
 
@@ -45,6 +45,6 @@ public class InterceptedFileSystemExport extends FSDataOutputStream {
 	}
 
 	private InterceptedFileSystemExport(Path path) throws IOException {
-		super(new InterceptedFileOutputStream(path.toUri().toString()), null);
+		super(new OptimizedInterceptedFileOutputStream(path.toUri().toString()), null);
 	}
 }

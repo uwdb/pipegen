@@ -2,9 +2,9 @@ name: Pipegen-Tests
 version: 51
 path: /home/bhaynes/research/pipegen/
 backupPath: /tmp/backup
-classPaths:
-  - target/
 instrumentation:
+  classPaths:
+    - target/
   port: 7780
   timeout: 60
   trace: $DIR/templates/ImportTracer.java
@@ -14,6 +14,8 @@ instrumentation:
   classes: .*
   debug: false
 optimization:
+  classPaths:
+    - target/
   excludeClassPaths:
     - lib/scala*.jar
 datapipe:

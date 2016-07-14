@@ -80,9 +80,8 @@ public class WorkerDirectoryServer {
         this.server.stop(delay);
     }
 
-    public void stop() {
-        stop(5000);
-    }
+    public void stop() { stop(false); }
+    public void stop(boolean force) { stop(force ? 0 : 30); }
 
     private static void onImport(WorkerDirectory directory, HttpExchange exchange)
             throws IOException {

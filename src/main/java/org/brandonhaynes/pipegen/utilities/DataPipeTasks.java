@@ -1,9 +1,9 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
-import org.brandonhaynes.pipegen.configuration.OptimizationTask;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
-import org.brandonhaynes.pipegen.configuration.Task;
+import org.brandonhaynes.pipegen.configuration.tasks.OptimizationTask;
+import org.brandonhaynes.pipegen.configuration.tasks.Task;
 import org.brandonhaynes.pipegen.instrumentation.InstrumentationListener;
 import org.brandonhaynes.pipegen.runtime.directory.VerificationWorkerDirectory;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryServer;
@@ -18,26 +18,28 @@ public class DataPipeTasks {
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
         //create(configuration.importTask);
-        create(configuration.exportTask);
-        //optimize(configuration.exportOptimizationTask);
+        //create(configuration.exportTask);
+        optimize(configuration.exportOptimizationTask);
     }
 
     public static void create(Task task) throws IOException, InterruptedException, MonitorException {
-        if(!DataPipeTasks.instrument(task) ||
-           !DataPipeTasks.verifyExistingFunctionality(task) ||
-           !DataPipeTasks.verifyDataPipeFunctionality(task))
-            DataPipeTasks.rollback(task.getConfiguration());
+        if(!instrument(task) ||
+           //!verifyExistingFunctionality(task) ||
+           !verifyDataPipeFunctionality(task))
+            rollback(task.getConfiguration());
         log.info("Done");
     }
 
     private static void optimize(OptimizationTask task)
             throws IOException, MonitorException, InterruptedException {
-        DataPipeTasks.instrument(task);
+        HostListener listener = new InstrumentationListener(task);
+        verifyDataPipeFunctionality(task);
+        listener.join();
     }
 
     private static boolean instrument(Task task) throws IOException, MonitorException, InterruptedException {
         HostListener listener = new InstrumentationListener(task);
-        Process process = DataPipeTasks.test(task);
+        Process process = test(task);
         listener.join();
         process.destroy();
         return process.exitValue() == 0;
@@ -50,7 +52,7 @@ public class DataPipeTasks {
     }
 
     private static boolean verifyExistingFunctionality(Task task) throws IOException, InterruptedException {
-        return verify(task.getConfiguration(), true) == 0;
+        return verify(task.getConfiguration(), true, false) == 0;
     }
 
     private static boolean verifyDataPipeFunctionality(Task task) throws IOException, InterruptedException {
@@ -60,22 +62,24 @@ public class DataPipeTasks {
                 task.getConfiguration().datapipeConfiguration.getLogPropertiesPath());
 
         task.getVerificationProxy().start();
-        int exitValue = verify(task.getConfiguration(), false);
+        int exitValue = verify(task.getConfiguration(), false, false);
         task.getVerificationProxy().stop();
 
         if(directory != null)
-            directory.stop();
+            directory.stop(true);
 
         return exitValue == 0;
     }
 
-    private static int verify(CompileTimeConfiguration configuration, boolean isVerifyingExistingFunctionality)
+    private static int verify(CompileTimeConfiguration configuration, boolean isVerifyingExistingFunctionality,
+                                                                      boolean isTransferOptimized)
             throws IOException, InterruptedException {
         log.info(String.format("Verifying %s (%s)", configuration.getSystemName(),
                 isVerifyingExistingFunctionality ? "existing functionality" : "datapipe functionality"));
 
         ProcessBuilder builder = configuration.datapipeConfiguration.getVerifyScript().getProcessBuilder();
         RuntimeConfiguration.setProcessVerificationMode(builder, !isVerifyingExistingFunctionality);
+        RuntimeConfiguration.setProcessOptimizationMode(builder, !isVerifyingExistingFunctionality && isTransferOptimized);
         Process process = builder.start();
         process.waitFor();
 

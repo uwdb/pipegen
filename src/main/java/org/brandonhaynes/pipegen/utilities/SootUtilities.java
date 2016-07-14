@@ -71,7 +71,8 @@ public class SootUtilities {
     }
 
     public static Scene initializeSoot(CompileTimeConfiguration configuration, String entryPoint) {
-        return initializeSoot(configuration.getClassPaths(), configuration.getExcludeClassPaths(), entryPoint);
+        //return initializeSoot(configuration.instrumentationConfiguration.getClassPaths(), configuration.getExcludeClassPaths(), entryPoint);
+        return initializeSoot(configuration.optimizationConfiguration.getClassPaths(), entryPoint);
     }
 
     public static Scene initializeSoot(Collection<Path> classPaths, String entryPoint) {
@@ -92,7 +93,8 @@ public class SootUtilities {
     }
 
     public static void configureSoot(CompileTimeConfiguration configuration, String entryPoint) {
-        configureSoot(configuration.getClassPaths(), configuration.getExcludeClassPaths(), entryPoint);
+        //configureSoot(configuration.instrumentationConfiguration.getClassPaths(), configuration.getExcludeClassPaths(), entryPoint);
+        configureSoot(configuration.optimizationConfiguration.getClassPaths(), entryPoint);
     }
 
     public static void configureSoot(Collection<Path> classPaths, String entryPoint) {

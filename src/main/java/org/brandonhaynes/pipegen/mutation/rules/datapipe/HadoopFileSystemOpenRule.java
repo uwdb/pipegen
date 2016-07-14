@@ -1,4 +1,4 @@
-package org.brandonhaynes.pipegen.mutation.rules;
+package org.brandonhaynes.pipegen.mutation.rules.datapipe;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -8,11 +8,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.brandonhaynes.pipegen.configuration.ImportTask;
+import org.brandonhaynes.pipegen.configuration.tasks.ImportTask;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
 import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemImport;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
+import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.IOException;
@@ -63,22 +64,22 @@ public class HadoopFileSystemOpenRule implements Rule {
     }
 
     private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
-        for(URL url: task.getConfiguration().findClasses(frame.getClassName())) {
+        for(URL url: task.getConfiguration().instrumentationConfiguration.findClasses(frame.getClassName())) {
             JarUtilities.replaceClasses(
                     url,
-                    task.getConfiguration().getClassPool(),
+                    task.getConfiguration().instrumentationConfiguration.getClassPool(),
                     InterceptedFileSystemImport.getDependencies(),
                     task.getConfiguration().getVersion(),
                     task.getConfiguration().getBackupPath());
             ExpressionReplacer.replaceExpression(
                     frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
-                    targetExpression, template, task.getConfiguration().getClassPool(),
+                    targetExpression, template, task.getConfiguration().instrumentationConfiguration.getClassPool(),
                     task.getConfiguration().getBackupPath());
         }
 
         task.getModifiedCallSites().add(frame);
         log.info(String.format("Injected data pipe at %s (%s)", frame.getStackFrame(),
-                task.getConfiguration().getClassPool().find(frame.getClassName())));
+                task.getConfiguration().instrumentationConfiguration.getClassPool().find(frame.getClassName())));
         return true;
     }
 

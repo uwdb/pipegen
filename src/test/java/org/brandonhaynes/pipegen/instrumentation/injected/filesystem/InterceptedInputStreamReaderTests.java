@@ -10,12 +10,12 @@ public class InterceptedInputStreamReaderTests {
     @Test
     public void testGetter() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream = new InterceptedFileInputStream(
+        OptimizedInterceptedFileInputStream inStream = new OptimizedInterceptedFileInputStream(
                                                   new ByteArrayInputStream(stream.toByteArray()));
         InterceptedInputStreamReader reader = new InterceptedInputStreamReader(inStream);
 

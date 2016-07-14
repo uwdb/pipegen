@@ -1,144 +1,98 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
-import io.netty.buffer.ArrowBuf;
-import org.apache.arrow.vector.ValueVector;
-import org.apache.arrow.vector.VarCharVector;
+import com.google.common.collect.Lists;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
-import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtilities;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
-import org.brandonhaynes.pipegen.utilities.ColumnUtilities;
-import org.brandonhaynes.pipegen.utilities.CompositeVector;
 
 import javax.annotation.Nonnull;
 import java.io.*;
 import java.net.Socket;
 import java.nio.channels.FileChannel;
 
-import static org.brandonhaynes.pipegen.utilities.StreamUtilities.convertInteger;
-
 public class InterceptedFileOutputStream extends FileOutputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
 
 	public static FileOutputStream intercept(String filename) throws IOException {
-        //TODO need to check runtime configuration here to use optimized or unoptimized versions
-		return RuntimeConfiguration.getInstance().getFilenamePattern().matcher(filename).matches()
-				? new InterceptedFileOutputStream(filename)
-				: new FileOutputStream(filename);
+		if(!RuntimeConfiguration.getInstance().getFilenamePattern().matcher(filename).matches())
+            return new FileOutputStream(filename);
+        else if(RuntimeConfiguration.getInstance().isInOptimizationMode())
+            return new OptimizedInterceptedFileOutputStream(filename);
+        else
+            return new InterceptedFileOutputStream(filename);
 	}
 
     public static FileOutputStream intercept(File file) throws IOException {
-        return RuntimeConfiguration.getInstance().getFilenamePattern().matcher(file.getName()).matches()
-                ? new InterceptedFileOutputStream(file)
-                : new FileOutputStream(file);
+        if(!RuntimeConfiguration.getInstance().getFilenamePattern().matcher(file.getName()).matches())
+            return new FileOutputStream(file);
+        else if(RuntimeConfiguration.getInstance().isInOptimizationMode())
+            return new OptimizedInterceptedFileOutputStream(file);
+        else
+            return new InterceptedFileOutputStream(file);
     }
 
-	private final String filename;
 	private final Socket socket;
 	private final WorkerDirectoryEntry entry;
-	private final OutputStream stream;
-    private CompositeVector vector;
-    private AugmentedString inferenceEvidence = AugmentedString.empty;
+    protected final String filename;
+	protected final OutputStream stream;
 
     public InterceptedFileOutputStream(File file) throws IOException {
-        this(file.getName());
+        this(file.getName(), false);
     }
 
-	public InterceptedFileOutputStream(String filename) throws IOException {
+    public InterceptedFileOutputStream(String filename) throws IOException {
+        this(filename, false);
+    }
+
+	protected InterceptedFileOutputStream(String filename, boolean deferMetadata) throws IOException {
 		super(nullDescriptor);
 		this.filename = filename;
 		this.entry = new WorkerDirectoryClient(InterceptUtilities.getSystemName(filename)).registerExport();
 		this.socket = new Socket(entry.getHostname(), entry.getPort());
 		this.stream = this.socket.getOutputStream();
+        if(!deferMetadata)
+            new InterceptMetadata(filename, Lists.newArrayList()).write(this.stream);
 	}
 
     InterceptedFileOutputStream(OutputStream stream) throws IOException {
+        this(stream, false);
+    }
+
+    protected InterceptedFileOutputStream(OutputStream stream, boolean deferMetadata) throws IOException {
         super(nullDescriptor);
         this.filename = null;
         this.entry = null;
         this.socket = null;
         this.stream = stream;
-    }
-
-    CompositeVector getVector() { return vector; }
-    private boolean getIsInferred() { return vector != null; }
-    private boolean getIsVectorFull() {
-        return vector.getAccessor().getValueCount() > RuntimeConfiguration.getInstance().getVectorSize();
-    }
-
-	public void write(AugmentedString value) throws IOException {
-        if(!getIsInferred())
-            addInferenceEvidence(value);
-        else if(!getIsVectorFull())
-            addToVector(value);
-        else
-            writeVector(value);
-	}
-
-    private void addToVector(AugmentedString value) {
-        vector.getMutator().set(value);
-    }
-    private void writeVector(AugmentedString value) throws IOException {
-        for(ValueVector v: vector.getVectors()) {
-            stream.write(convertInteger(v.getAccessor().getValueCount()));
-            for(ArrowBuf buffer: v.getBuffers(false)) {
-                stream.write(convertInteger(getBufferSize(v, buffer)));
-                buffer.getBytes(0, stream, getBufferSize(v, buffer));
-            }
-        }
-
-        if(value != null)
-            write(value);
-    }
-
-    private static int getBufferSize(ValueVector vector, ArrowBuf buffer) {
-        return vector instanceof VarCharVector && ((VarCharVector)vector).getBuffer() == buffer
-                ? ((VarCharVector)vector).getVarByteLength()
-                : buffer.readableBytes();
-    }
-
-    private void addInferenceEvidence(AugmentedString value) throws IOException  {
-        inferenceEvidence = AugmentedString.concat(inferenceEvidence, value);
-        if(inferenceEvidence.containsNonNumeric("\n")) {
-            vector = ColumnUtilities.createVector(inferenceEvidence);
-            vector.allocateNew(RuntimeConfiguration.getInstance().getVarCharSize(),
-                               RuntimeConfiguration.getInstance().getVectorSize());
-            new InterceptMetadata(filename, vector.getClasses()).write(this.stream);
-            write(inferenceEvidence);
-        }
+        if(!deferMetadata)
+            new InterceptMetadata(null, Lists.newArrayList()).write(this.stream);
     }
 
 	@Override
 	public void write(@Nonnull byte[] b) throws IOException {
-        write(new AugmentedString(b));
+        stream.write(b);
 	}
 
 	@Override
 	public void write(@Nonnull byte[] b, int off, int len) throws IOException {
-        byte[] bytes = new byte[len];
-        System.arraycopy(b, off, bytes, 0, len);
-        write(new AugmentedString(bytes));
+        stream.write(b, off, len);
 	}
 
 	@Override
 	public void write(int b) throws IOException {
-        write(new AugmentedString(b));
+        stream.write(b);
 	}
 
 	@Override
 	public void flush() throws IOException {
-        if(vector != null)
-            writeVector(null);
 		stream.flush();
 	}
 
 	@Override
 	public void	close() throws IOException {
-        if(!getIsInferred())
-            write(AugmentedString.newline);
-        flush();
+		flush();
 		super.close();
 		stream.close();
         if(socket != null)

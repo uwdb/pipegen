@@ -13,11 +13,11 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 
-public class InterceptedFileOutputStreamTests {
+public class OptimizedInterceptedFileOutputStreamTests {
     @Test
     public void testInference() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
         iStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
 
         CompositeVector vector = iStream.getVector();
@@ -30,7 +30,7 @@ public class InterceptedFileOutputStreamTests {
     @Test
     public void testMetadata() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
         iStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
 
         ByteBuffer buffer = ByteBuffer.wrap(stream.toByteArray());
@@ -45,7 +45,7 @@ public class InterceptedFileOutputStreamTests {
     @Test
     public void testInferenceMultipleWrites() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
         iStream.write(new AugmentedString(1));
         iStream.write(new AugmentedString(','));
         iStream.write(new AugmentedString(1.5));
@@ -63,7 +63,7 @@ public class InterceptedFileOutputStreamTests {
     @Test
     public void testVectorFlush() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
 
         iStream.write(new AugmentedString(123456789));
         iStream.write(new AugmentedString(','));
@@ -87,7 +87,7 @@ public class InterceptedFileOutputStreamTests {
     @Test
     public void testMultiRowVectorFlush() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
 
         iStream.write(new AugmentedString(123456789));
         iStream.write(new AugmentedString(','));
@@ -112,7 +112,7 @@ public class InterceptedFileOutputStreamTests {
     @Test
     public void testFlushOnClose() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
 
         iStream.write(new AugmentedString(1234567890, '\n'));
 
@@ -127,7 +127,7 @@ public class InterceptedFileOutputStreamTests {
     @Test
     public void testVectorEmptyFlush() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
 
         iStream.flush();
 
@@ -139,7 +139,7 @@ public class InterceptedFileOutputStreamTests {
     @Test
     public void testCloseWithoutNewline() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
 
         iStream.write(new AugmentedString(1234567890.5));
 
@@ -156,7 +156,7 @@ public class InterceptedFileOutputStreamTests {
     @Test
     public void testEmptyClose() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream iStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream iStream = new OptimizedInterceptedFileOutputStream(stream);
 
         iStream.close();
 

@@ -40,12 +40,16 @@ public class HostListener implements sun.jvmstat.monitor.event.HostListener {
                 String vmId = "//" + pid.toString() + "?mode=r";
                 VmIdentifier id = new VmIdentifier(vmId);
                 MonitoredVm vm = host.getMonitoredVm(id, 0);
-;
+
                 if (predicate.test(new ImmutablePair<>(MonitoredVmUtil.mainClass(vm, true),
-                                                       MonitoredVmUtil.commandLine(vm)))) {
-                    log.info("Attaching to " + MonitoredVmUtil.mainClass(vm, true));
-                    success = success | action.apply((Integer) pid);
-                }
+                                                       MonitoredVmUtil.commandLine(vm))))
+                    try {
+                        log.info("Attaching to " + MonitoredVmUtil.mainClass(vm, true));
+                        success = success | action.apply((Integer) pid);
+                    } catch(RuntimeException e) {
+                        log.info("Ignoring runtime exception");
+                        e.printStackTrace();
+                    }
             }
         } catch (MonitorException | URISyntaxException e) {
             throw new RuntimeException(e);

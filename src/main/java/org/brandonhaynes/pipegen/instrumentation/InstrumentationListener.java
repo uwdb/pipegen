@@ -3,7 +3,7 @@ package org.brandonhaynes.pipegen.instrumentation;
 import com.google.common.collect.Lists;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
-import org.brandonhaynes.pipegen.configuration.Task;
+import org.brandonhaynes.pipegen.configuration.tasks.Task;
 import org.brandonhaynes.pipegen.mutation.rules.CompositeRule;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.utilities.HostListener;

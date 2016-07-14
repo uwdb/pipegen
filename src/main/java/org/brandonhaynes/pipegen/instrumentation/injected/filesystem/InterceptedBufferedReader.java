@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 public class InterceptedBufferedReader extends BufferedReader {
-    private final InterceptedFileInputStream inputStream;
+    private final OptimizedInterceptedFileInputStream inputStream;
 
     public InterceptedBufferedReader(Reader reader, int i) {
         super(reader, i);

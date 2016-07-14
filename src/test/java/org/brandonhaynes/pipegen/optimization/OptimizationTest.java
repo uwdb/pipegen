@@ -2,8 +2,8 @@ package org.brandonhaynes.pipegen.optimization;
 
 import com.google.common.collect.Lists;
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
-import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStream;
 import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedOutputStreamWriter;
+import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.OptimizedInterceptedFileOutputStream;
 import org.brandonhaynes.pipegen.support.MockInterceptedOutputStreamWriter;
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 
 public abstract class OptimizationTest {
     protected static InterceptedOutputStreamWriter getTestWriter() throws IOException {
-        FileOutputStream stream = InterceptedFileOutputStream.intercept(File.createTempFile("test", null));
+        FileOutputStream stream = OptimizedInterceptedFileOutputStream.intercept(File.createTempFile("test", null));
         return new MockInterceptedOutputStreamWriter(stream);
     }
 

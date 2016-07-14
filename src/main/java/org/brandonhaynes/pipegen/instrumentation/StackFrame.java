@@ -6,7 +6,8 @@ import java.util.regex.Pattern;
 
 public class StackFrame {
     private static final Pattern pattern =
-            Pattern.compile("(?<class>[\\w\\.\\$]+)\\.(?<method>([\\w\\$]+|<init>))\\((?<file>\\w+\\.(java|scala))(:(?<line>\\d+)\\))?");
+        Pattern.compile(
+            "(?<class>[\\w\\.\\$]+)\\.(?<method>([\\w\\$]+|<init>|<clinit>))\\((?<file>(\\w+\\.(java|scala))|Native Method|Unknown Source)(:(?<line>\\d+)\\))?");
 
     private String stackFrame;
     private String className;

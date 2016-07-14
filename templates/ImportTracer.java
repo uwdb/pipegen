@@ -13,6 +13,24 @@ import static com.sun.btrace.BTraceUtils.*;
 
 @BTrace(unsafe=true)
 public class ImportTracer {
+    @OnMethod(clazz="+java.io.FileOutputStream",
+              method="write")
+              //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnInterceptedFileOutputStreamWrite(@Self Object self, //@TargetMethodOrField String method,
+                                                          //@ProbeMethodName String probeMethod,
+                                                          AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
+
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
+        printFields(buffer, self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
+
 //    @OnMethod(clazz="/.*/", method="toString")
 //    public static void OnToString(@Self Object self, AnyType[] args) {
 //        print("Entry:\n" + classOf(self) + "\n" + "\n" + "[]\n" + "{}\n" + jstackStr());
@@ -71,8 +89,25 @@ public class ImportTracer {
     }
 
     @OnMethod(clazz="+java.io.OutputStreamWriter",
-            method="<init>") //,
+            method="<init>",
+            location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnOutputStreamWriter(@Self Object self, AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
+
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
+        printFields(buffer, self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
+
+    @OnMethod(clazz="+java.io.BufferedWriter",
+            method="<init>",
+            location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnBufferedWriter(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 
         buffer.append("Entry:").append(LINE_SEPARATOR);

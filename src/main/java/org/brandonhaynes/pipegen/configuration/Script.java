@@ -15,7 +15,6 @@ public class Script {
     }
 
     public List<String> getCommands() { return commands; }
-    public CompileTimeConfiguration getConfiguration() { return configuration; }
 
     public ProcessBuilder getProcessBuilder() {
         ProcessBuilder builder = new ProcessBuilder("bash", "-c", this.toString());

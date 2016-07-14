@@ -4,7 +4,7 @@ import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
-import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileOutputStream;
+import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.*;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtilities;
@@ -45,6 +45,13 @@ public class ClassUtilities {
     public static List<Class> getPipeGenDependencies() {
         return new ArrayList<Class>() {{
             add(InterceptedFileOutputStream.class);
+            add(InterceptedFileInputStream.class);
+            add(InterceptedOutputStreamWriter.class);
+            add(InterceptedBufferedWriter.class);
+            add(OptimizedInterceptedFileOutputStream.class);
+            add(OptimizedInterceptedFileInputStream.class);
+            add(OptimizedInterceptedOutputStreamWriter.class);
+            add(OptimizedInterceptedBufferedWriter.class);
             add(InterceptUtilities.class);
             add(InterceptMetadata.class);
             add(RuntimeConfiguration.class);
@@ -59,6 +66,7 @@ public class ClassUtilities {
             add(ArrayUtilities.class);
             add(ColumnUtilities.class);
             add(StreamUtilities.class);
+            add(StringUtilities.class);
             add(CompositeVector.class);
             add(CompositeVector.Accessor.class);
             add(CompositeVector.Mutator.class);

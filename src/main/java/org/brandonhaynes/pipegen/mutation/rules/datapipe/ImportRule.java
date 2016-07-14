@@ -1,6 +1,8 @@
-package org.brandonhaynes.pipegen.mutation.rules;
+package org.brandonhaynes.pipegen.mutation.rules.datapipe;
 
-import org.brandonhaynes.pipegen.configuration.ImportTask;
+import org.brandonhaynes.pipegen.configuration.tasks.ImportTask;
+import org.brandonhaynes.pipegen.mutation.rules.CompositeRule;
+import org.brandonhaynes.pipegen.mutation.rules.SaveTraceRule;
 
 public class ImportRule extends CompositeRule {
     public ImportRule(ImportTask task) {

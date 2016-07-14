@@ -2,7 +2,6 @@ package org.brandonhaynes.pipegen.optimization;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
 import org.brandonhaynes.pipegen.optimization.sinks.InvokeMethodSinkExpression;
@@ -70,7 +69,7 @@ public class Optimizer {
     }
 
     private static void configureSoot(CompileTimeConfiguration configuration, String entryPoint) {
-        Set<String> classPaths = configuration.getClassPaths().stream()
+        Set<String> classPaths = configuration.optimizationConfiguration.getClassPaths().stream()
                                               .flatMap(Optimizer::getFileOrFiles)
                                               .map(Path::toString)
                                               .collect(Collectors.toSet());
@@ -95,13 +94,10 @@ public class Optimizer {
 
         Options.v().set_soot_classpath(String.join(":", classPaths));
 
-        Options.v().set_process_dir(Lists.newArrayList(
-                Sets.difference(
-                        getDistinctPaths(classPaths),
-                        configuration.getExcludeClassPaths().stream()
-                                     .flatMap(Optimizer::getFileOrFiles)
-                                     .map(Path::toString)
-                                     .collect(Collectors.toSet()))));
+        Options.v().set_process_dir(configuration.optimizationConfiguration.getClassPaths().stream()
+                                                                           .flatMap(Optimizer::getFileOrFiles)
+                                                                           .map(Path::toString)
+                                                                           .collect(Collectors.toList()));
     }
 
     private static Stream<Path> getFileOrFiles(Path fileOrDirectory) {
@@ -117,13 +113,5 @@ public class Optimizer {
             return Lists.newArrayList(files).stream().map(File::toPath);
         else
             return Lists.newArrayList(new Path[] {fileOrDirectory}).stream();
-    }
-
-    private static Set<String> getDistinctPaths(Set<String> filesOrDirectories) {
-        return filesOrDirectories.stream()
-                .map(File::new)
-                .map(f -> f.isDirectory() ? f : f.getParent())
-                .map(Object::toString)
-                .collect(Collectors.toSet());
     }
 }

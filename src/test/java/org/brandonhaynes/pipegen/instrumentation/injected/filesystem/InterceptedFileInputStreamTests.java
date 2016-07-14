@@ -15,11 +15,11 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testMetadata() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         CompositeVector vector = inStream.getVector();
         assert (vector.getVectors().size() == 3);
@@ -31,12 +31,12 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testReadByte() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         ByteBuffer buffer = ByteBuffer.allocate(10);
         for(int i = 0; i < "1,1.5,foo\n".length(); i++)
@@ -49,13 +49,13 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testMultilineReadByte() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         ByteBuffer buffer = ByteBuffer.allocate(20);
         for(int i = 0; i < 2 * "1,1.5,foo\n".length(); i++)
@@ -68,13 +68,13 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testReadBytes() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         byte[] bytes = new byte[20];
         assert(inStream.read(bytes) == 20);
@@ -86,13 +86,13 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testReadFewerBytes() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         byte[] bytes = new byte[10];
         assert(inStream.read(bytes) == 10);
@@ -109,13 +109,13 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testReadMoreBytes() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         byte[] bytes = new byte[30];
         assert(inStream.read(bytes) == 20);
@@ -127,13 +127,13 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testReadBytesOffset() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         byte[] bytes = new byte[6];
         int read = inStream.read(bytes, 2, 6);
@@ -148,13 +148,13 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testReadLine() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         AugmentedString line = inStream.readLine();
         assert(line.getState()[0].equals(1));
@@ -172,13 +172,13 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testMixedReadLine() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         AugmentedString line = inStream.readLine();
         assert(line.getState()[0].equals(1));
@@ -196,13 +196,13 @@ public class InterceptedFileInputStreamTests {
     @Test
     public void testMixedReadLine2() throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(1024);
-        InterceptedFileOutputStream outStream = new InterceptedFileOutputStream(stream);
+        OptimizedInterceptedFileOutputStream outStream = new OptimizedInterceptedFileOutputStream(stream);
         outStream.write(new AugmentedString(1, ',', 1.5, ',', "foo", '\n'));
         outStream.write(new AugmentedString(2, ',', 2.5, ',', "bar", '\n'));
         outStream.close();
 
-        InterceptedFileInputStream inStream =
-                new InterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
+        OptimizedInterceptedFileInputStream inStream =
+                new OptimizedInterceptedFileInputStream(new ByteArrayInputStream(stream.toByteArray()));
 
         byte[] bytes = new byte[8];
         int read = inStream.read(bytes, 0, 8);

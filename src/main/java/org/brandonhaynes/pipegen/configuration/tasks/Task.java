@@ -1,5 +1,7 @@
-package org.brandonhaynes.pipegen.configuration;
+package org.brandonhaynes.pipegen.configuration.tasks;
 
+import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
+import org.brandonhaynes.pipegen.configuration.Script;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.runtime.proxy.VerificationProxy;
