@@ -4,11 +4,7 @@ import javassist.CannotCompileException;
 import javassist.NotFoundException;
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -41,7 +37,7 @@ public class SaveTraceRule implements Rule {
             for(int index = 0; index < trace.getRoot().size(); index++)
                 writer.write(trace.getRoot().get(index).toString() + (index < trace.getRoot().size() - 1 ? ",\n" : "\n"));
             writer.write("]");
-            return false;
+            return false; // Don't count this rule as a modification
         }
     }
 

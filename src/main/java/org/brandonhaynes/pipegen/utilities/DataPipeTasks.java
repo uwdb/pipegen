@@ -2,6 +2,7 @@ package org.brandonhaynes.pipegen.utilities;
 
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
+import org.brandonhaynes.pipegen.configuration.tasks.ExportOptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.OptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.Task;
 import org.brandonhaynes.pipegen.instrumentation.InstrumentationListener;
@@ -18,28 +19,37 @@ public class DataPipeTasks {
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
         //create(configuration.importTask);
-        //create(configuration.exportTask);
-        optimize(configuration.exportOptimizationTask);
+        if(create(configuration.exportTask))
+        optimize(configuration);
     }
 
-    public static void create(Task task) throws IOException, InterruptedException, MonitorException {
+    public static boolean create(Task task) throws IOException, InterruptedException, MonitorException {
         if(!instrument(task) ||
            //!verifyExistingFunctionality(task) ||
-           !verifyDataPipeFunctionality(task))
+           !verifyDataPipeFunctionality(task)) {
             rollback(task.getConfiguration());
+            return false;
+        }
         log.info("Done");
+        return true;
     }
 
-    private static void optimize(OptimizationTask task)
+    private static void optimize(CompileTimeConfiguration configuration)
             throws IOException, MonitorException, InterruptedException {
-        HostListener listener = new InstrumentationListener(task);
-        verifyDataPipeFunctionality(task);
-        listener.join();
+        HostListener listener;
+
+        do {
+            OptimizationTask task = new ExportOptimizationTask(configuration); //TODO OptimizationTask
+
+            listener = new InstrumentationListener(task);
+            verifyDataPipeFunctionality(task);
+        } while(listener.join() > 0);
     }
 
     private static boolean instrument(Task task) throws IOException, MonitorException, InterruptedException {
         HostListener listener = new InstrumentationListener(task);
         Process process = test(task);
+        process.waitFor();
         listener.join();
         process.destroy();
         return process.exitValue() == 0;

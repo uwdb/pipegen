@@ -7,6 +7,7 @@ import sun.jvmstat.monitor.event.HostEvent;
 import sun.jvmstat.monitor.event.VmStatusChangeEvent;
 
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -17,7 +18,8 @@ public class HostListener implements sun.jvmstat.monitor.event.HostListener {
     private final Predicate<Pair<String, String>> predicate;
     private final Function<Integer, Boolean> action;
     private final int timeout;
-    private boolean success = false;
+    private AtomicInteger actionsSucceeding = new AtomicInteger(0);
+    private AtomicInteger actionsInProgress = new AtomicInteger(0);
 
     public HostListener(Predicate<Pair<String, String>> predicate, Function<Integer, Boolean> action, int timeout)
             throws MonitorException {
@@ -45,13 +47,17 @@ public class HostListener implements sun.jvmstat.monitor.event.HostListener {
                                                        MonitoredVmUtil.commandLine(vm))))
                     try {
                         log.info("Attaching to " + MonitoredVmUtil.mainClass(vm, true));
-                        success = success | action.apply((Integer) pid);
+                        actionsInProgress.incrementAndGet();
+                        actionsSucceeding.addAndGet(action.apply((Integer) pid) ? 1 : 0);
+                        actionsInProgress.decrementAndGet();
                     } catch(RuntimeException e) {
                         log.info("Ignoring runtime exception");
+                        actionsInProgress.decrementAndGet();
                         e.printStackTrace();
                     }
             }
         } catch (MonitorException | URISyntaxException e) {
+            actionsInProgress.set(0);
             throw new RuntimeException(e);
         }
     }
@@ -59,12 +65,14 @@ public class HostListener implements sun.jvmstat.monitor.event.HostListener {
     public void disconnected(HostEvent event) {
     }
 
-    public boolean join() throws InterruptedException, MonitorException {
+    public int join() throws InterruptedException, MonitorException {
         int wait = 0;
-        while (wait++ < timeout && !success)
+        while (wait++ < timeout && actionsInProgress.get() > 0) {
+            log.info(String.format("%d actions in progress (%d)", actionsInProgress.get(), wait));
             Thread.sleep(1000);
+        }
         host.removeHostListener(this);
-        return this.success;
+        return actionsSucceeding.get();
     }
 
     private static HostIdentifier getDefaultHostIdentifier() {

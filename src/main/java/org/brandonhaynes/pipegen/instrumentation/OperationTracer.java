@@ -1,24 +1,22 @@
 package org.brandonhaynes.pipegen.instrumentation;
 
-import java.io.*;
-import java.net.SocketException;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-
 import com.google.common.base.Joiner;
+import com.google.common.util.concurrent.SimpleTimeLimiter;
+import com.google.common.util.concurrent.UncheckedTimeoutException;
 import com.sun.btrace.CommandListener;
 import com.sun.btrace.client.Client;
 import com.sun.btrace.comm.Command;
 import com.sun.btrace.comm.DataCommand;
 import com.sun.btrace.comm.ErrorCommand;
 
-import com.google.common.util.concurrent.SimpleTimeLimiter;
-import com.google.common.util.concurrent.UncheckedTimeoutException;
+import java.io.*;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class OperationTracer {
 	public static final int DEFAULT_PORT = 7777;
@@ -83,7 +81,7 @@ public class OperationTracer {
 		} finally {
 			try {
     	        client.sendExit(0);
-	        } catch(SocketException e) {
+	        } catch(IOException e) {
 				log.warning(String.format("Swallowed exception '%s' during ungraceful client exit", e.getMessage()));
 	        }
             executor.shutdownNow();
@@ -117,6 +115,11 @@ public class OperationTracer {
         }
 
         private void onExitCommand() {
+            try {
+                Thread.sleep(1000);
+            } catch(InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @SuppressWarnings("ThrowableResultOfMethodCallIgnored")

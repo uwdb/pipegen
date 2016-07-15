@@ -4,8 +4,13 @@ import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetad
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 
-import java.io.*;
-import java.net.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -13,11 +18,11 @@ import java.util.logging.Logger;
 public class ExportVerificationProxy implements VerificationProxy, Runnable {
     private static final Logger log = Logger.getLogger(ExportVerificationProxy.class.getName());
 
-    private final Thread thread = new Thread(this);
     private final ServerSocket serverSocket;
     private final WorkerDirectoryClient client = new WorkerDirectoryClient("*", 10, 60);
     private final Path basePath;
     private volatile boolean isRunning = true;
+    private volatile Thread thread;
 
     public ExportVerificationProxy(Path basePath) throws IOException {
         this.basePath = basePath;
@@ -26,6 +31,7 @@ public class ExportVerificationProxy implements VerificationProxy, Runnable {
 
     public void start() {
         log.info("Starting export verification proxy");
+        thread = new Thread(this);
         this.thread.start();
     }
 

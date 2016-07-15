@@ -2,7 +2,10 @@ package org.brandonhaynes.pipegen.configuration;
 
 import com.fasterxml.jackson.dataformat.yaml.snakeyaml.Yaml;
 import com.google.common.io.Files;
-import org.brandonhaynes.pipegen.configuration.tasks.*;
+import org.brandonhaynes.pipegen.configuration.tasks.ExportTask;
+import org.brandonhaynes.pipegen.configuration.tasks.ExportTaskImpl;
+import org.brandonhaynes.pipegen.configuration.tasks.ImportTask;
+import org.brandonhaynes.pipegen.configuration.tasks.ImportTaskImpl;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -25,7 +28,6 @@ public class CompileTimeConfiguration {
     public final DataPipeConfiguration datapipeConfiguration;
     public final ImportTask importTask;
     public final ExportTask exportTask;
-    public final ExportOptimizationTask exportOptimizationTask;
 
     public CompileTimeConfiguration(String filename) throws IOException {
         this(Paths.get(filename));
@@ -45,7 +47,6 @@ public class CompileTimeConfiguration {
         datapipeConfiguration = new DataPipeConfiguration(this, getChild(yaml, "datapipe", Map.class));
         importTask = new ImportTaskImpl(this);
         exportTask = new ExportTaskImpl(this);
-        exportOptimizationTask = new ExportOptimizationTask(this);
     }
 
     public String getSystemName() { return name; }

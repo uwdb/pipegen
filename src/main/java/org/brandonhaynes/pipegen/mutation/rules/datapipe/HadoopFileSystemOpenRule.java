@@ -42,11 +42,11 @@ public class HadoopFileSystemOpenRule implements Rule {
     }
 
     public boolean apply(TraceResult trace) throws IOException, NotFoundException, CannotCompileException {
-        boolean result = true;
+        boolean result = false;
 
         for(JsonNode node: getNodes(trace))
             if(isRelevantCallSite(node))
-                result &= apply(node);
+                result |= apply(node);
 
         return result;
     }

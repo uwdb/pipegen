@@ -20,10 +20,10 @@ public class CompositeRule implements Rule {
     }
 
     public boolean apply(TraceResult trace) throws IOException, NotFoundException, CannotCompileException {
-        boolean result = true;
+        boolean result = false;
 
         for(Rule rule: rules)
-            result &= rule.apply(trace);
+            result |= rule.apply(trace);
 
         return result;
     }
