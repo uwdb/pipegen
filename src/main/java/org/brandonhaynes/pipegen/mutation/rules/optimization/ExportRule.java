@@ -8,7 +8,7 @@ public class ExportRule extends CompositeRule {
     public ExportRule(OptimizationTask task) {
         super(new SaveTraceRule(task.getConfiguration()),
               new OutputStreamWriterRule(task),
-              new BufferedWriterRule(task));
-              //new InterceptedFileOutputStreamRule(task));
+              new BufferedWriterRule(task),
+              new ExportSinkRule(task));
     }
 }

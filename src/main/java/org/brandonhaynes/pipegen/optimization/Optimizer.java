@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
+import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.optimization.sinks.InvokeMethodSinkExpression;
 import org.brandonhaynes.pipegen.optimization.sinks.IoSinkExpressions;
 import org.brandonhaynes.pipegen.optimization.transforms.StringExpressionTransformer;
@@ -22,6 +23,16 @@ import java.util.stream.Stream;
 
 //TODO optimizer should defer to SootUtilities
 public class Optimizer {
+    public static Scene optimize(CompileTimeConfiguration configuration, Set<StackFrame> stackFrames) {
+        resetSoot();
+        configureSoot(configuration, null);
+
+        //TODO this selects all overloads and is a superset of the actual methods we want
+        Collection<String> s = stackFrames.stream().flatMap(f -> Scene.v().getSootClass(f.getClassName()).getMethods().stream().filter(m -> m.getName().equals(f.getMethodName())))
+                .map(SootMethod::getSignature).collect(Collectors.toSet());
+        return executeSoot(s);
+    }
+
     public static Scene optimize(CompileTimeConfiguration configuration, Collection<String> signatures) {
         return optimize(configuration, signatures, null);
     }
@@ -37,10 +48,9 @@ public class Optimizer {
         G.reset();
     }
 
+    //TODO parameterize with scene
     private static Scene executeSoot(Collection<String> methodSignatures) {
-        IoSinkExpressions sinkExpressions = new IoSinkExpressions();
-
-        Scene.v().loadNecessaryClasses();
+        IoSinkExpressions sinkExpressions = new IoSinkExpressions(Scene.v());
 
         Queue<MethodAnalysis> queue = Queues.newArrayDeque(methodSignatures.stream()
                                                                            .map(s -> Scene.v().getMethod(s))
@@ -98,6 +108,7 @@ public class Optimizer {
                                                                            .flatMap(Optimizer::getFileOrFiles)
                                                                            .map(Path::toString)
                                                                            .collect(Collectors.toList()));
+        Scene.v().loadNecessaryClasses();
     }
 
     private static Stream<Path> getFileOrFiles(Path fileOrDirectory) {

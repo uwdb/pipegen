@@ -16,8 +16,8 @@ public class InvokeMethodSinkExpression implements SinkExpression {
     private final Pattern methodNamePattern;
     private final SootClass clazz;
 
-    public InvokeMethodSinkExpression(Class<?> clazz, String methodName) {
-        this(new SootClass(clazz.getName()), Pattern.compile(methodName));
+    public InvokeMethodSinkExpression(Scene scene, Class<?> clazz, String methodName) {
+        this(scene.getSootClass(clazz.getName()), Pattern.compile(methodName));
     }
 
     public InvokeMethodSinkExpression(SootMethod method) {

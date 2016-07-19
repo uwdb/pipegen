@@ -6,7 +6,7 @@ import org.brandonhaynes.pipegen.optimization.OptimizationTest;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-public class ChildBoxedWriterTest extends OptimizationTest  {
+public class NoPropagationWhenNoWriteTest extends OptimizationTest  {
     @Override
     protected String getDataflowMethodSignature() { return "child(java.lang.String)"; }
 
@@ -20,9 +20,6 @@ public class ChildBoxedWriterTest extends OptimizationTest  {
     private void child(String converted) throws IOException {
         OutputStreamWriter writer = getTestWriter();
 
-        assert(converted instanceof AugmentedString);
-
-        if(converted != null)
-            writer.write(converted);
+        assert(!(converted instanceof AugmentedString));
     }
 }

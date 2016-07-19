@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 public class ConstructorInvocationTransformer extends InvokeMethodExpressionTransformer {
     private final Class<?> replacementClass;
 
-    public ConstructorInvocationTransformer(Class<?> clazz, Class<?> replacementClass) {
-        super(clazz, "<init>");
+    public ConstructorInvocationTransformer(Class<?> clazz, Class<?> replacementClass, boolean removeOnApplication) {
+        super(clazz, "<init>", removeOnApplication);
         this.replacementClass = replacementClass;
     }
 

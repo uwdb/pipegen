@@ -2,6 +2,7 @@ package org.brandonhaynes.pipegen.optimization.sinks;
 
 import com.google.common.collect.Lists;
 import org.brandonhaynes.pipegen.optimization.MethodAnalysis;
+import soot.Scene;
 import soot.Unit;
 import soot.Value;
 import soot.toolkits.graph.UnitGraph;
@@ -14,9 +15,9 @@ import java.util.Set;
 public class IoSinkExpressions implements SinkExpression {
     private final Collection<SinkExpression> statements;
 
-    public IoSinkExpressions() {
+    public IoSinkExpressions(Scene scene) {
         statements = Lists.newArrayList(
-                new InvokeMethodSinkExpression(OutputStreamWriter.class, "write"),
+                new InvokeMethodSinkExpression(scene, OutputStreamWriter.class, "write"),
                 new ParameterSinkExpression());
                 //new InvokeMethodSinkExpression(InterceptedFileOutputStream.class, "write"));
     }

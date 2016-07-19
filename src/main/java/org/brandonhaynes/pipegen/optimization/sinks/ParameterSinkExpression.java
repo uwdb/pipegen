@@ -20,8 +20,9 @@ public class ParameterSinkExpression implements SinkExpression {
 
     @Override
     public boolean isApplicable(Set<Unit> input, Unit node, Set<Unit> output) {
-        return node instanceof IdentityStmt &&
-                ((IdentityStmt)node).getRightOp() instanceof ParameterRef;
+        return !input.isEmpty() &&
+               node instanceof IdentityStmt &&
+               ((IdentityStmt)node).getRightOp() instanceof ParameterRef;
     }
 
     @Override

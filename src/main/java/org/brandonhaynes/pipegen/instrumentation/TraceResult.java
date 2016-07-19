@@ -1,10 +1,10 @@
 package org.brandonhaynes.pipegen.instrumentation;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Strings;
+
+import java.io.IOException;
 
 public class TraceResult {
     private final ArrayNode root;
@@ -77,12 +77,12 @@ public class TraceResult {
 
         builder.append("{");
         for (int i = 0; i < pairs.length - 1; i++) {
-            String[] keyvalue = pairs[i].split("=", 2);
+            String[] keyValue = pairs[i].split("=", 2);
             builder.append("\"")
-                   .append(escape(keyvalue[0].trim()))
-                   .append("\": ")
-                   .append(quote(keyvalue[1]))
-                   .append(trailingComma(i + 1, pairs));
+                    .append(escape(keyValue[0].trim()))
+                    .append("\": ")
+                    .append(quote(keyValue[1]))
+                    .append(trailingComma(i + 1, pairs));
         }
         builder.append("}");
 

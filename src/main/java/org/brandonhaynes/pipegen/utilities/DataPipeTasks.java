@@ -6,6 +6,7 @@ import org.brandonhaynes.pipegen.configuration.tasks.ExportOptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.OptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.Task;
 import org.brandonhaynes.pipegen.instrumentation.InstrumentationListener;
+import org.brandonhaynes.pipegen.optimization.Optimizer;
 import org.brandonhaynes.pipegen.runtime.directory.VerificationWorkerDirectory;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryServer;
 import sun.jvmstat.monitor.MonitorException;
@@ -19,8 +20,8 @@ public class DataPipeTasks {
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
         //create(configuration.importTask);
-        if(create(configuration.exportTask))
-        optimize(configuration);
+//        if(create(configuration.exportTask))
+            optimize(configuration);
     }
 
     public static boolean create(Task task) throws IOException, InterruptedException, MonitorException {
@@ -34,16 +35,27 @@ public class DataPipeTasks {
         return true;
     }
 
-    private static void optimize(CompileTimeConfiguration configuration)
+    private static boolean optimize(CompileTimeConfiguration configuration)
             throws IOException, MonitorException, InterruptedException {
         HostListener listener;
+        OptimizationTask task;
 
+        log.info("Beginning optimization instrumentation");
+
+        log.info("Pushing writers up call graph");
         do {
-            OptimizationTask task = new ExportOptimizationTask(configuration); //TODO OptimizationTask
+            task = new ExportOptimizationTask(configuration); //TODO OptimizationTask
 
             listener = new InstrumentationListener(task);
-            verifyDataPipeFunctionality(task);
+            if(!verifyDataPipeFunctionality(task))
+                return false;
         } while(listener.join() > 0);
+
+        // Final task will contain no changes, but the *SinkRules will add call sites for dataflow optimization
+        log.info("Begin dataflow analysis");
+        Optimizer.optimize(configuration, task.getModifiedCallSites());
+
+        return true;
     }
 
     private static boolean instrument(Task task) throws IOException, MonitorException, InterruptedException {

@@ -16,14 +16,17 @@ import java.util.stream.Collectors;
 public class InvokeMethodExpressionTransformer implements ExpressionTransformer {
     private final Pattern methodNamePattern;
     private final Class<?> targetClass;
+    private final boolean removeOnApplication;
 
-    public InvokeMethodExpressionTransformer(Class<?> targetClass, String methodName) {
-        this(targetClass, Pattern.compile(methodName));
+    public InvokeMethodExpressionTransformer(Class<?> targetClass, String methodName, boolean removeOnApplication) {
+        this(targetClass, Pattern.compile(methodName), removeOnApplication);
     }
 
-    public InvokeMethodExpressionTransformer(Class<?> targetClass, Pattern methodNamePattern) {
+    public InvokeMethodExpressionTransformer(Class<?> targetClass, Pattern methodNamePattern,
+                                             boolean removeOnApplication) {
         this.targetClass = targetClass;
         this.methodNamePattern = methodNamePattern;
+        this.removeOnApplication = removeOnApplication;
     }
 
     protected Class<?> getTargetClass() { return targetClass; }
@@ -51,6 +54,9 @@ public class InvokeMethodExpressionTransformer implements ExpressionTransformer 
             throw new RuntimeException("Expected statement.");
         else
             transform((Stmt)node, transforms);
+
+        if(removeOnApplication)
+            output.remove(node);
     }
 
     protected void transform(Stmt statement, CompositeExpressionTransformer transforms) {

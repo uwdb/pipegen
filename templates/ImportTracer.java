@@ -13,6 +13,25 @@ import static com.sun.btrace.BTraceUtils.*;
 
 @BTrace(unsafe=true)
 public class ImportTracer {
+    @OnMethod(clazz="+java.lang.Appendable",
+    //@OnMethod(clazz="+org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter",
+              method="append")
+//              location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnInterceptedWriterWrite(@Self Object self, AnyType[] args) {
+        if(self.getClass().getName().equals("org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter")) {
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.append("Entry:").append(LINE_SEPARATOR);
+            buffer.append(classOf(self)).append(LINE_SEPARATOR);
+            buffer.append(probeLine()).append(LINE_SEPARATOR);
+            printArray(buffer, new AnyType[0]);
+            printFields(buffer, self);
+            jstack(buffer);
+
+            println(buffer.toString());
+        }
+    }
+
     @OnMethod(clazz="+java.io.FileOutputStream",
               method="write")
               //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
@@ -197,7 +216,7 @@ public class ImportTracer {
                 buf.append(f.getName());
                 buf.append('=');
                 try {
-                    buf.append(Strings.str(f.get(obj)));
+                    buf.append(Strings.str(f.get(obj)).replace("\n", "\\n"));
                 } catch (Exception exp) {
                     throw translate(exp);
                 }

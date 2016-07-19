@@ -10,9 +10,9 @@ import java.util.Set;
 
 public class StringExpressionTransformer implements CompositeExpressionTransformer {
     private final Collection<ExpressionTransformer> statements = Lists.newArrayList(
-            new InvokeMethodExpressionTransformer(Integer.class, "toString"),
-            new ConstructorInvocationTransformer(StringBuilder.class, AugmentedStringBuilder.class),
-            new ConstructorInvocationTransformer(StringBuffer.class, AugmentedStringBuffer.class));
+            new InvokeMethodExpressionTransformer(Integer.class, "toString", true),
+            new ConstructorInvocationTransformer(StringBuilder.class, AugmentedStringBuilder.class, false),
+            new ConstructorInvocationTransformer(StringBuffer.class, AugmentedStringBuffer.class, false));
 
     public StringExpressionTransformer() {}
 

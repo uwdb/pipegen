@@ -1,5 +1,6 @@
 package org.brandonhaynes.pipegen.optimization.interprocedural;
 
+import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 import org.brandonhaynes.pipegen.optimization.OptimizationTest;
 
 import java.io.IOException;
@@ -21,6 +22,8 @@ public class ShallowChildBoxedWriterTest extends OptimizationTest  {
 
     private void grandchild(String converted) throws IOException {
         OutputStreamWriter writer = getTestWriter();
+
+        assert(converted instanceof AugmentedString);
 
         if(converted != null)
             writer.write(converted);
