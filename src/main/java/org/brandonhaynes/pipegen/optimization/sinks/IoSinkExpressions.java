@@ -18,6 +18,7 @@ public class IoSinkExpressions implements SinkExpression {
     public IoSinkExpressions(Scene scene) {
         statements = Lists.newArrayList(
                 new InvokeMethodSinkExpression(scene, OutputStreamWriter.class, "write"),
+                new InvokeMethodSinkExpression(scene, Appendable.class, "append"),
                 new ParameterSinkExpression());
                 //new InvokeMethodSinkExpression(InterceptedFileOutputStream.class, "write"));
     }

@@ -43,7 +43,9 @@ public class OptimizedInterceptedBufferedWriter extends BufferedWriter {
 
     @Override
     public void write(@Nullable String s, int i, int i1) throws IOException {
-        if(s != null)
+        if(s != null && s instanceof AugmentedString && i == 0 && i1 == s.length())
+            write((AugmentedString)s);
+        else if(s != null)
             write(new AugmentedString(s.substring(i, i1)));
     }
 

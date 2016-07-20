@@ -1,16 +1,15 @@
 package org.brandonhaynes.pipegen.optimization.sinks;
 
-import com.google.common.collect.Sets;
 import org.brandonhaynes.pipegen.optimization.MethodAnalysis;
 import soot.*;
 import soot.jimple.InvokeStmt;
+import soot.jimple.StringConstant;
 import soot.toolkits.graph.UnitGraph;
 
 import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-//import soot.baf.VirtualInvokeInst;
+import java.util.stream.Collectors;
 
 public class InvokeMethodSinkExpression implements SinkExpression {
     private final Pattern methodNamePattern;
@@ -51,6 +50,21 @@ public class InvokeMethodSinkExpression implements SinkExpression {
     }
 
     private Set<Value> getTaintedValues(InvokeStmt node) {
-        return Sets.newHashSet(node.getInvokeExpr().getArgs());
+        return node.getInvokeExpr().getArgs().stream().filter(this::isStringLike).collect(Collectors.toSet());
+    }
+
+    private boolean isStringLike(Value value) {
+        return value.getType() instanceof RefType &&
+               !(value instanceof StringConstant) &&
+               isStringLike((RefType)value.getType());
+    }
+
+    private boolean isStringLike(RefType type) {
+        //TODO how to generalize this?
+        return type.getClassName().equals(Object.class.getName()) ||
+               type.getClassName().equals(Object[].class.getName()) ||
+               type.getClassName().equals(String.class.getName()) ||
+               type.getClassName().equals(CharSequence.class.getName()) ||
+               type.getClassName().equals(Iterable.class.getName());
     }
 }

@@ -30,8 +30,10 @@ public class ParameterSinkExpression implements SinkExpression {
                                Set<Value> taintedValues, Queue<MethodAnalysis> methods) {
         assert(isApplicable(input, node, output));
 
-        methods.addAll(getCallers(graph.getBody().getMethod(),
-                       ((IdentityStmt) node).getRightOp()));
+        //TODO isApplicable should have access to tainted values...
+        if(isTainted(taintedValues, node))
+            methods.addAll(getCallers(graph.getBody().getMethod(),
+                           ((IdentityStmt) node).getRightOp()));
     }
 
     private static List<MethodAnalysis> getCallers(SootMethod callee, Value value) {
@@ -39,5 +41,13 @@ public class ParameterSinkExpression implements SinkExpression {
         Scene.v().getCallGraph().edgesInto(callee).forEachRemaining(e ->
                 methods.add(new MethodAnalysis(e.src(), callee, Sets.newHashSet(value))));
         return methods;
+    }
+
+    private static boolean isTainted(Set<Value> taintedValues, Unit node) {
+        return node instanceof IdentityStmt && isTainted(taintedValues, ((IdentityStmt)node));
+    }
+
+    private static boolean isTainted(Set<Value> taintedValues, IdentityStmt node) {
+        return taintedValues.contains(node.getLeftOp());
     }
 }

@@ -26,7 +26,7 @@ public class Optimizer {
     public static Scene optimize(CompileTimeConfiguration configuration, Set<StackFrame> stackFrames) {
         resetSoot();
         configureSoot(configuration, null);
-
+        Scene.v().getSootClass("org.apache.commons.csv.CSVPrinter");
         //TODO this selects all overloads and is a superset of the actual methods we want
         Collection<String> s = stackFrames.stream().flatMap(f -> Scene.v().getSootClass(f.getClassName()).getMethods().stream().filter(m -> m.getName().equals(f.getMethodName())))
                 .map(SootMethod::getSignature).collect(Collectors.toSet());

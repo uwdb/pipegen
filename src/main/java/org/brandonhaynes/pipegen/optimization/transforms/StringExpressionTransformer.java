@@ -11,6 +11,11 @@ import java.util.Set;
 public class StringExpressionTransformer implements CompositeExpressionTransformer {
     private final Collection<ExpressionTransformer> statements = Lists.newArrayList(
             new InvokeMethodExpressionTransformer(Integer.class, "toString", true),
+            new InvokeMethodExpressionTransformer(Double.class, "toString", true),
+            new InvokeMethodExpressionTransformer(Float.class, "toString", true),
+            new InvokeMethodExpressionTransformer(Object.class, "toString", true),
+
+            //TODO are these still needed, since we pushed conversion into the instrumentation phase?
             new ConstructorInvocationTransformer(StringBuilder.class, AugmentedStringBuilder.class, false),
             new ConstructorInvocationTransformer(StringBuffer.class, AugmentedStringBuffer.class, false));
 
