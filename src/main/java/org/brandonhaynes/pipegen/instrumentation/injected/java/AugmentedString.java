@@ -48,7 +48,12 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     }
 
     public static AugmentedString concat(AugmentedString left, AugmentedString right) {
-        return new AugmentedString(ArrayUtilities.concat(left.state, right.state));
+        if(left.state.length == 0)
+            return right;
+        else if (right.state.length == 0)
+            return left;
+        else
+            return new AugmentedString(ArrayUtilities.concat(left.state, right.state));
     }
 
     public AugmentedString() {
@@ -163,7 +168,12 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
 
     @Override
     public boolean equals(Object var1) {
-        return var1 instanceof String && collapse().equals(var1);
+        if(this == var1)
+            return true;
+        else if(var1 instanceof AugmentedString)
+            return collapse().equals(((AugmentedString)var1).collapse());
+        else
+            return var1 instanceof String && collapse().equals(var1);
     }
 
     @Override
@@ -276,7 +286,10 @@ public class AugmentedString extends org.brandonhaynes.pipegen.instrumentation.i
     @Override
     @Nonnull
     public CharSequence subSequence(int var1, int var2) {
-        return collapse().subSequence(var1, var2);
+        if(var1 == 0 && var2 == length())
+            return this;
+        else
+            return collapse().subSequence(var1, var2);
     }
 
     @Override

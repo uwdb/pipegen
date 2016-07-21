@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.channels.FileChannel;
 
+//TODO injected classes should be moved into top-level namespace
 public class InterceptedFileOutputStream extends FileOutputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
 
