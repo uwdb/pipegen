@@ -1,18 +1,34 @@
 package org.brandonhaynes.pipegen.templates;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
-import com.sun.btrace.annotations.*;
 import com.sun.btrace.AnyType;
 import org.apache.hadoop.fs.Path;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import static com.sun.btrace.BTraceUtils.*;
 
 @BTrace(unsafe=true)
 public class ImportTracer {
+    @OnMethod(clazz="+java.lang.Readable",
+            //@OnMethod(clazz="+org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter",
+            method="read")
+//              location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnInterceptedReaderRead(@Self Object self, AnyType[] args) {
+        if(self.getClass().getName().equals("org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedReader")) {
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.append("Entry:").append(LINE_SEPARATOR);
+            buffer.append(classOf(self)).append(LINE_SEPARATOR);
+            buffer.append(probeLine()).append(LINE_SEPARATOR);
+            printArray(buffer, new AnyType[0]);
+            printFields(buffer, self);
+            jstack(buffer);
+
+            println(buffer.toString());
+        }
+    }
+
     @OnMethod(clazz="+java.lang.Appendable",
     //@OnMethod(clazz="+org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter",
               method="append")
@@ -77,6 +93,38 @@ public class ImportTracer {
             location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnFileInputStream(@Self Object self, @TargetMethodOrField String method,
                                          @ProbeMethodName String probeMethod, AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
+
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
+        printFields(buffer, self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
+
+    @OnMethod(clazz="+java.io.InputStreamReader",
+            method="<init>",
+            location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnInputStreamReader(@Self Object self, AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
+
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
+        printFields(buffer, self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
+
+    @OnMethod(clazz="+java.io.BufferedReader",
+            method="<init>")
+            //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    public static void OnBufferedReader(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 
         buffer.append("Entry:").append(LINE_SEPARATOR);

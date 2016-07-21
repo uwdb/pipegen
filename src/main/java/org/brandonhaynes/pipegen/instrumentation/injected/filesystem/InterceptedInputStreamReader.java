@@ -1,14 +1,22 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
+import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class InterceptedInputStreamReader extends InputStreamReader {
-    private final OptimizedInterceptedFileInputStream inputStream;
-
-    public InterceptedInputStreamReader(OptimizedInterceptedFileInputStream inputStream) {
-        super(inputStream);
-        this.inputStream = inputStream;
+    public static InputStreamReader intercept(InputStream inputStream) throws IOException {
+        return RuntimeConfiguration.getInstance().isOptimized() &&
+                inputStream instanceof OptimizedInterceptedFileInputStream
+                ? new OptimizedInterceptedInputStreamReader((OptimizedInterceptedFileInputStream)inputStream)
+                : new InterceptedInputStreamReader(inputStream);
     }
 
-    public OptimizedInterceptedFileInputStream getInterceptedStream() { return inputStream; }
+    public InterceptedInputStreamReader(InputStream inputStream) {
+        super(inputStream);
+        if(inputStream instanceof OptimizedInterceptedFileInputStream)
+            throw new RuntimeException("Data pipe failure: attempt to use optimized stream with unoptimized reader");
+    }
 }

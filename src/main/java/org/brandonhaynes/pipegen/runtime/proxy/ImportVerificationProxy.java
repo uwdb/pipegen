@@ -49,8 +49,10 @@ public class ImportVerificationProxy implements VerificationProxy, Runnable {
                 if(this.isRunning)
                     throw new RuntimeException(e);
             } catch(IOException e) {
-                log.severe(e.toString());
-                throw new RuntimeException(e);
+                if(isRunning) {
+                    log.severe(e.toString());
+                    throw new RuntimeException(e);
+                }
             }
     }
 

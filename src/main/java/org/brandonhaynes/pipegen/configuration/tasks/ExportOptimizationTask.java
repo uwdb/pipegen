@@ -12,10 +12,15 @@ public class ExportOptimizationTask extends BaseTask implements OptimizationTask
     private ExportVerificationProxy proxy;
     private Rule rule;
 
-    public ExportOptimizationTask(CompileTimeConfiguration configuration) throws IOException {
+    public ExportOptimizationTask(CompileTimeConfiguration configuration) {
         super(configuration, configuration.datapipeConfiguration.getExportScript());
-        proxy = new ExportVerificationProxy(configuration.getBasePath());
-        rule = new ExportRule(this);
+
+        try {
+            proxy = new ExportVerificationProxy(configuration.getBasePath());
+            rule = new ExportRule(this);
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public VerificationProxy getVerificationProxy() {

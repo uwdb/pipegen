@@ -2,6 +2,7 @@ package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
+import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtilities;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
@@ -32,6 +33,7 @@ public class InterceptedFileInputStream extends FileInputStream {
 	private final Socket socket;
     private final WorkerDirectoryEntry entry;
     protected final InputStream stream;
+	protected final InterceptMetadata metadata;
 
     public InterceptedFileInputStream(String filename) throws IOException {
         super(nullDescriptor);
@@ -41,6 +43,7 @@ public class InterceptedFileInputStream extends FileInputStream {
 				serverSocket.getInetAddress().getHostName(), serverSocket.getLocalPort());
 		this.socket = this.serverSocket.accept();
 		this.stream = this.socket.getInputStream();
+		this.metadata = InterceptMetadata.read(this.stream);
 	}
 
 	@VisibleForTesting
@@ -51,6 +54,7 @@ public class InterceptedFileInputStream extends FileInputStream {
 		this.entry = null;
 		this.socket = null;
 		this.stream = stream;
+		this.metadata = InterceptMetadata.read(this.stream);
 	}
 
 	@Override

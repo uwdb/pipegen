@@ -17,8 +17,8 @@ public class InterceptedInputStreamReaderTests {
 
         OptimizedInterceptedFileInputStream inStream = new OptimizedInterceptedFileInputStream(
                                                   new ByteArrayInputStream(stream.toByteArray()));
-        InterceptedInputStreamReader reader = new InterceptedInputStreamReader(inStream);
+        OptimizedInterceptedInputStreamReader reader = new OptimizedInterceptedInputStreamReader(inStream);
 
-        assert(reader.getInterceptedStream() == inStream);
+        assert(reader.getInputStream() == inStream);
     }
 }

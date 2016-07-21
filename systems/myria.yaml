@@ -26,8 +26,7 @@ optimization:
     - build/libs/s*.jar
     - build/libs/x*.jar
 datapipe:
-  import: /home/bhaynes/research/myria/gradlew -Dtest.single=FileScanTest jar cleanTest test #-Dtest.debug
-#TODO  export: ./gradlew -Dtest.single=DataSinkTest compileJava cleanTest test
+  import: ./gradlew -Dtest.single=FileScanTest cleanTest test #-Dtest.debug
   export: ./gradlew -Dtest.single=DataSinkTest cleanTest test
   verify:
     - unzip -o build/libs/myria-0.1.jar -d build/main | grep brandonhaynes | cat

@@ -20,8 +20,8 @@ public class InterceptedBufferedReaderTests {
         outStream.close();
 
         BufferedReader inStream =
-                new InterceptedBufferedReader(
-                        new InterceptedInputStreamReader(
+                new OptimizedInterceptedBufferedReader(
+                        new OptimizedInterceptedInputStreamReader(
                             new OptimizedInterceptedFileInputStream(
                                 new ByteArrayInputStream(stream.toByteArray()))));
 

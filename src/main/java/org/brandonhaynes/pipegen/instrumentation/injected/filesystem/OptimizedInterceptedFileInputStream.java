@@ -3,7 +3,6 @@ package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 import com.google.common.annotations.VisibleForTesting;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
-import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.utilities.ColumnUtilities;
 import org.brandonhaynes.pipegen.utilities.CompositeVector;
 import org.brandonhaynes.pipegen.utilities.StreamUtilities;
@@ -19,7 +18,6 @@ import static org.brandonhaynes.pipegen.utilities.StringUtilities.intersperse;
 public class OptimizedInterceptedFileInputStream extends InterceptedFileInputStream {
     private static ByteBuffer emptyBuffer = ByteBuffer.allocate(0);
 
-    private final InterceptMetadata metadata;
     private final CompositeVector vector;
     private final byte[] buffer = new byte[RuntimeConfiguration.getInstance().getBufferAllocationSize()];
     private ByteBuffer pendingBuffer = emptyBuffer;
@@ -27,7 +25,6 @@ public class OptimizedInterceptedFileInputStream extends InterceptedFileInputStr
 
     public OptimizedInterceptedFileInputStream(String filename) throws IOException {
         super(filename);
-        this.metadata = InterceptMetadata.read(this.stream);
         this.vector = ColumnUtilities.createVector(metadata.vectorClasses);
         vector.allocateNew(RuntimeConfiguration.getInstance().getVarCharSize(),
                            RuntimeConfiguration.getInstance().getVectorSize());
@@ -36,7 +33,6 @@ public class OptimizedInterceptedFileInputStream extends InterceptedFileInputStr
 	@VisibleForTesting
 	OptimizedInterceptedFileInputStream(InputStream stream) throws IOException {
 		super(stream);
-        this.metadata = InterceptMetadata.read(this.stream);
         this.vector = ColumnUtilities.createVector(metadata.vectorClasses);
         vector.allocateNew(RuntimeConfiguration.getInstance().getVarCharSize(),
                            RuntimeConfiguration.getInstance().getVectorSize());

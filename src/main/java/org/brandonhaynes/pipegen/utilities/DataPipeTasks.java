@@ -3,6 +3,7 @@ package org.brandonhaynes.pipegen.utilities;
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.tasks.ExportOptimizationTask;
+import org.brandonhaynes.pipegen.configuration.tasks.ImportOptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.OptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.Task;
 import org.brandonhaynes.pipegen.instrumentation.InstrumentationListener;
@@ -12,6 +13,7 @@ import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryServer;
 import sun.jvmstat.monitor.MonitorException;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class DataPipeTasks {
@@ -19,14 +21,15 @@ public class DataPipeTasks {
 
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
-        //create(configuration.importTask);
-//        if(create(configuration.exportTask))
-            optimize(configuration);
+        if(create(configuration.importTask))
+            optimize(configuration, () -> new ImportOptimizationTask(configuration));
+        if(create(configuration.exportTask))
+            optimize(configuration, () -> new ExportOptimizationTask(configuration));
     }
 
     public static boolean create(Task task) throws IOException, InterruptedException, MonitorException {
         if(!instrument(task) ||
-           //!verifyExistingFunctionality(task) ||
+           !verifyExistingFunctionality(task) ||
            !verifyDataPipeFunctionality(task)) {
             rollback(task.getConfiguration());
             return false;
@@ -35,7 +38,7 @@ public class DataPipeTasks {
         return true;
     }
 
-    private static boolean optimize(CompileTimeConfiguration configuration)
+    private static boolean optimize(CompileTimeConfiguration configuration, Supplier<OptimizationTask> taskFactory)
             throws IOException, MonitorException, InterruptedException {
         HostListener listener;
         OptimizationTask task;
@@ -44,8 +47,7 @@ public class DataPipeTasks {
 
         log.info("Pushing writers up call graph");
         do {
-            task = new ExportOptimizationTask(configuration); //TODO OptimizationTask
-
+            task = taskFactory.get();
             listener = new InstrumentationListener(task);
             if(!verifyDataPipeFunctionality(task))
                 return false;
