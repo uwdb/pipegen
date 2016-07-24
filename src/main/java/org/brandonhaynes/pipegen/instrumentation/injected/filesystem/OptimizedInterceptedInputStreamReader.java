@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 
 public class OptimizedInterceptedInputStreamReader extends InputStreamReader {
     private final OptimizedInterceptedFileInputStream inputStream;
@@ -17,10 +19,31 @@ public class OptimizedInterceptedInputStreamReader extends InputStreamReader {
         this.inputStream = inputStream;
 
         try {
-            this.decoder = StreamDecoder.forInputStreamReader(inputStream, this, (String) null);
+            this.decoder = StreamDecoder.forInputStreamReader(inputStream, this, (String)null);
         } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }
+    }
+
+    public OptimizedInterceptedInputStreamReader(OptimizedInterceptedFileInputStream inputStream, String charsetName)
+            throws UnsupportedEncodingException {
+        super(inputStream, charsetName);
+        this.inputStream = inputStream;
+        this.decoder = StreamDecoder.forInputStreamReader(inputStream, this, charsetName);
+    }
+
+    public OptimizedInterceptedInputStreamReader(OptimizedInterceptedFileInputStream inputStream, Charset charset)
+            throws UnsupportedEncodingException {
+        super(inputStream, charset);
+        this.inputStream = inputStream;
+        this.decoder = StreamDecoder.forInputStreamReader(inputStream, this, charset);
+    }
+
+    public OptimizedInterceptedInputStreamReader(OptimizedInterceptedFileInputStream inputStream, CharsetDecoder decoder)
+            throws UnsupportedEncodingException {
+        super(inputStream, decoder);
+        this.inputStream = inputStream;
+        this.decoder = StreamDecoder.forInputStreamReader(inputStream, this, decoder);
     }
 
     OptimizedInterceptedFileInputStream getInputStream() { return inputStream; }

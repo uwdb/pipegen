@@ -25,7 +25,6 @@ public class FileInputStreamRule implements Rule {
     private static final Class sourceClass = FileInputStream.class;
     private static final Class targetClass = InterceptedFileInputStream.class;
     private static final String template = String.format("$_ = %s.intercept($$);", targetClass.getName());
-    private static final String targetExpression = ".*";
 
     private final ImportTask task;
 
@@ -54,13 +53,16 @@ public class FileInputStreamRule implements Rule {
             StackFrame frame = new StackFrame(stackFrame.asText());
             if(isRelevantStackFrame(frame))
                 return isAlreadyModified(frame) ||
-                       modifyCallSite(frame);
+                       modifyCallSite(node, frame);
         }
 
         return false;
     }
 
-    private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
+    //TODO should be idempotent and refuse to modify any call sites inside InterceptedFileInputStream.intercept(...)
+    private boolean modifyCallSite(JsonNode node, StackFrame frame)
+            throws IOException, NotFoundException, CannotCompileException {
+        String targetExpression = new StackFrame(node.get("stack").get(0).asText()).getClassName();
         ExpressionReplacer.replaceExpression(
                 frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
                 targetExpression, template, task.getConfiguration().instrumentationConfiguration.getClassPool(),
@@ -87,7 +89,11 @@ public class FileInputStreamRule implements Rule {
         String path = getPath(node);
         //TODO
         return node.get("class").asText().equals(sourceClass.getName()) &&
-               path != null && !path.contains(".class") && !path.contains(".properties");
+               path != null &&
+               !path.contains(".class") &&
+               !path.contains(".properties") &&
+               !path.contains(".java") &&
+               !path.contains(".log");
     }
 
     private String getPath(JsonNode node) {
@@ -100,7 +106,7 @@ public class FileInputStreamRule implements Rule {
     private Collection<JsonNode> getNodes(TraceResult trace) {
         Collection<JsonNode> nodes = Lists.newArrayList();
 
-        for(JsonNode entry: trace.getRoot())
+        for(JsonNode entry: trace.getNodes())
             if(entry.findValue("state") != null)
                 nodes.add(entry);
         return nodes;

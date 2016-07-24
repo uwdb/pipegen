@@ -12,6 +12,11 @@ public class OptimizedInterceptedBufferedReader extends BufferedReader {
         this.reader = reader;
     }
 
+    public OptimizedInterceptedBufferedReader(OptimizedInterceptedInputStreamReader reader, int size) {
+        super(reader, size);
+        this.reader = reader;
+    }
+
     @Override
     public int read() throws IOException {
         return reader.read();

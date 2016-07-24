@@ -1,21 +1,38 @@
 package org.brandonhaynes.pipegen.instrumentation;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import org.brandonhaynes.pipegen.utilities.AutoCloseableAbstractIterator;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 
 public class TraceResult {
     private final ArrayNode root;
+    private final Path traceFile;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String[] stringArray = new String[0];
+    private static final String HEADER = "Entry:";
 
     public TraceResult(String traceData) throws IOException {
         this.root = (ArrayNode) new ObjectMapper().readTree(parseEntries(traceData));
+        this.traceFile = null;
+    }
+
+    public TraceResult(Path traceFile) throws IOException {
+        this.root = null;
+        this.traceFile = traceFile;
     }
 
     private static String parseEntries(String data) {
         StringBuilder builder = new StringBuilder();
-        String[] entries = data.split("Entry:\n");
+        String[] entries = data.split(HEADER + "\n");
 
         builder.append("[\n");
         for (int i = 0; i < entries.length; i++)
@@ -28,8 +45,10 @@ public class TraceResult {
     }
 
     private static StringBuilder parseEntry(String entry) {
+        return parseEntry(entry.split("\n"));
+    }
+    private static StringBuilder parseEntry(String[] lines) {
         StringBuilder builder = new StringBuilder();
-        String[] lines = entry.split("\n");
 
         builder.append("{");
         if (lines.length > 0)
@@ -124,7 +143,52 @@ public class TraceResult {
         return "";
     }
 
-    public ArrayNode getRoot() {
-        return root;
+    public Iterable<JsonNode> getNodes() {
+        return () -> {
+            try {
+                return new JsonNodeIterator(traceFile);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    public ArrayNode getRoot() { return root; }
+
+    private class JsonNodeIterator extends AutoCloseableAbstractIterator<JsonNode> {
+        private final BufferedReader reader;
+
+        JsonNodeIterator(Path traceFile) throws IOException {
+            reader = new BufferedReader(new FileReader(traceFile.toFile()));
+            if(!reader.readLine().equals(HEADER))
+                throw new IOException(String.format("Expected trace file to begin with header '%s'", HEADER));
+        }
+
+        @Override
+        protected JsonNode computeNext() {
+            List<String> lines = Lists.newArrayList();
+            String line;
+
+            try {
+                while ((line = reader.readLine()) != null && !line.equals(""))
+                    if(!line.equals(HEADER))
+                        lines.add(line);
+
+                return line != null || !lines.isEmpty()
+                        ? objectMapper.readTree(parseEntry(lines.toArray(stringArray)).toString())
+                        : closeAndSignalEndOfData();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private JsonNode closeAndSignalEndOfData() throws IOException {
+            close();
+            return endOfData();
+        }
+
+        public void close() throws IOException {
+            reader.close();
+        }
     }
 }

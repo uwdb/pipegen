@@ -5,17 +5,14 @@ import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetad
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
+
+import static org.brandonhaynes.pipegen.utilities.PathUtilities.resolveFilename;
 
 public class ImportVerificationProxy implements VerificationProxy, Runnable {
     private static final Logger log = Logger.getLogger(ImportVerificationProxy.class.getName());
@@ -63,31 +60,23 @@ public class ImportVerificationProxy implements VerificationProxy, Runnable {
 
         try(Socket socket = new Socket(entry.getHostname(), entry.getPort())) {
             try(OutputStream stream = socket.getOutputStream()) {
-                new InterceptMetadata(entry.getSystemName(), Lists.newArrayList()).write(stream);
-
                 log.info(String.format("Sending %s to importer", entry.getSystemName()));
 
-                try(InputStream input = new FileInputStream(Paths.get(basePath.toString()).resolve(getImportPath(entry)).toFile())) {
-                //try(InputStream input = new FileInputStream(Paths.get(basePath.toString(), getImportPath(entry)).toString())) {
-                    int bytesRead;
-                    byte[] buffer = new byte[4096];
+                try {
+                    try (InputStream input = new FileInputStream(Paths.get(basePath.toString())
+                                                     .resolve(resolveFilename(entry.getSystemName())).toFile())) {
+                        int bytesRead;
+                        byte[] buffer = new byte[4096];
 
-                    while ((bytesRead = input.read(buffer)) != -1)
-                        stream.write(buffer, 0, bytesRead);
+                        new InterceptMetadata(entry.getSystemName(), Lists.newArrayList()).write(stream);
+
+                        while ((bytesRead = input.read(buffer)) != -1)
+                            stream.write(buffer, 0, bytesRead);
+                    }
+                } catch(FileNotFoundException e) {
+                    new InterceptMetadata(entry.getSystemName(), new Class[0], e).write(stream);
                 }
             }
-        }
-    }
-
-    private String getImportPath(WorkerDirectoryEntry entry) {
-        try {
-            URI uri = new URI(entry.getSystemName());
-            if (uri.getScheme() == null || uri.getScheme().equals("file"))
-                return uri.getPath();
-            else
-                throw new RuntimeException("Scheme not supported: " + uri.getScheme());
-        } catch(URISyntaxException e) {
-            throw new RuntimeException(e);
         }
     }
 }

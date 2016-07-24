@@ -19,24 +19,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class OperationTracer {
-	public static final int DEFAULT_PORT = 7777;
+	private static final int DEFAULT_PORT = 7777;
 	private static final Logger log = Logger.getLogger(OperationTracer.class.getName());
 
-	public static TraceResult traceOperation(int processId, String clientCommand, Path traceFile,
-											 Collection<Path> classPaths, Path agentFile, int timeout)
+	public static TraceResult traceOperation(int processId, Path traceFile, Collection<Path> classPaths,
+											 Path agentFile, int timeout)
 			throws IOException {
-		return traceOperation(processId, clientCommand, traceFile, classPaths, agentFile, timeout, false);
+		return traceOperation(processId, traceFile, classPaths, agentFile, timeout, false);
 	}
 
-	public static TraceResult traceOperation(int processId, String clientCommand,
-											 Path traceFile, Collection<Path> classPaths, Path agentFile,
+	public static TraceResult traceOperation(int processId, Path traceFile, Collection<Path> classPaths, Path agentFile,
 											 int timeout, boolean debug)
 			throws IOException {
-		return traceOperation(processId, DEFAULT_PORT, clientCommand, traceFile, classPaths, agentFile, timeout, debug);
+		return traceOperation(processId, DEFAULT_PORT, traceFile, classPaths, agentFile, timeout, debug);
 	}
 
-	public static TraceResult traceOperation(int processId, int clientPort, String clientCommand,
-											 Path traceFile, Collection<Path> classPaths, Path agentFile,
+	public static TraceResult traceOperation(int processId, int clientPort, Path traceFile,
+											 Collection<Path> classPaths, Path agentFile,
 											 int timeout, boolean debug)
 			throws IOException {
 		log.info("Attaching to process " + Integer.toString(processId));
@@ -51,27 +50,27 @@ public class OperationTracer {
 					traceFile, output));
 		else {
 			client.attach(Integer.toString(processId), agentFile.toString(), classPath, null);
-			return executeClient(client, bytecode, clientCommand, timeout);
+			return executeClient(client, bytecode, timeout);
 		}
 	}
 
-	private static TraceResult executeClient(final Client client, final byte[] bytecode,
-											 String clientCommand, int timeout)
+	private static TraceResult executeClient(final Client client, final byte[] bytecode, int timeout)
 			throws IOException {
 		ExecutorService executor = Executors.newFixedThreadPool(1);
-		final StringWriter writer = new StringWriter();
-		//Process process = Runtime.getRuntime().exec(clientCommand);
+		final File instrumentationFile = File.createTempFile("instrumentation", null);
 
 		try {
-			new SimpleTimeLimiter(executor).callWithTimeout((Callable<Void>) () -> {
-				try {
-					client.submit(null, bytecode, new String[0], new OperationCommandListener(client, writer));
-				} catch(EOFException e) {
-					log.warning(String.format("Swallowed exception '%s' during ungraceful client exit",
-							e.getMessage()));
-				}
-               return null;
-            }, timeout, TimeUnit.SECONDS, false);
+			try(FileWriter writer = new FileWriter(instrumentationFile)) {
+				new SimpleTimeLimiter(executor).callWithTimeout((Callable<Void>) () -> {
+					try {
+						client.submit(null, bytecode, new String[0], new OperationCommandListener(client, writer));
+					} catch (EOFException e) {
+						log.warning(String.format("Swallowed exception '%s' during ungraceful client exit",
+								e.getMessage()));
+					}
+					return null;
+				}, timeout, TimeUnit.SECONDS, false);
+			}
 		} catch(IOException e) {
 			throw e;
 		} catch(UncheckedTimeoutException e) {
@@ -88,7 +87,7 @@ public class OperationTracer {
             //process.destroy();
 		}
 
-		return new TraceResult(writer.toString());
+		return new TraceResult(instrumentationFile.toPath());
 	}
 
 	private static class OperationCommandListener implements CommandListener {

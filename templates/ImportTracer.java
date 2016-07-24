@@ -1,6 +1,7 @@
-package org.brandonhaynes.pipegen.templates;
+package org.brandonhaynes.pipegen.utilities;
 
 import com.sun.btrace.AnyType;
+import com.sun.btrace.annotations.*;
 import org.apache.hadoop.fs.Path;
 
 import java.lang.reflect.Field;
@@ -30,8 +31,8 @@ public class ImportTracer {
     }
 
     @OnMethod(clazz="+java.lang.Appendable",
-    //@OnMethod(clazz="+org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter",
-              method="append")
+            //@OnMethod(clazz="+org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter",
+            method="append")
 //              location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnInterceptedWriterWrite(@Self Object self, AnyType[] args) {
         if(self.getClass().getName().equals("org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter")) {
@@ -49,8 +50,8 @@ public class ImportTracer {
     }
 
     @OnMethod(clazz="+java.io.FileOutputStream",
-              method="write")
-              //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+            method="write")
+    //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnInterceptedFileOutputStreamWrite(@Self Object self, //@TargetMethodOrField String method,
                                                           //@ProbeMethodName String probeMethod,
                                                           AnyType[] args) {
@@ -66,7 +67,7 @@ public class ImportTracer {
         println(buffer.toString());
     }
 
-//    @OnMethod(clazz="/.*/", method="toString")
+    //    @OnMethod(clazz="/.*/", method="toString")
 //    public static void OnToString(@Self Object self, AnyType[] args) {
 //        print("Entry:\n" + classOf(self) + "\n" + "\n" + "[]\n" + "{}\n" + jstackStr());
 //    }
@@ -123,7 +124,7 @@ public class ImportTracer {
 
     @OnMethod(clazz="+java.io.BufferedReader",
             method="<init>")
-            //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnBufferedReader(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 
@@ -139,7 +140,7 @@ public class ImportTracer {
 
     @OnMethod(clazz="+java.io.FileOutputStream",
             method="<init>") //,
-            //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+    //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnFileOutputStream(@Self Object self, //@TargetMethodOrField String method),
                                           //@ProbeMethodName String probeMethod,
                                           AnyType[] args) {

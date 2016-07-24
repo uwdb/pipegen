@@ -1,5 +1,6 @@
 package org.brandonhaynes.pipegen.mutation.rules;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
@@ -34,9 +35,9 @@ public class SaveTraceRule implements Rule {
 
         try(OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(traceFilename.toFile()))) {
             writer.write("[");
-            for(int index = 0; index < trace.getRoot().size(); index++)
-                writer.write(trace.getRoot().get(index).toString() + (index < trace.getRoot().size() - 1 ? ",\n" : "\n"));
-            writer.write("]");
+            for(JsonNode node: trace.getNodes())
+                writer.write(node.toString() + ",\n");
+            writer.write("null]");
             return false; // Don't count this rule as a modification
         }
     }

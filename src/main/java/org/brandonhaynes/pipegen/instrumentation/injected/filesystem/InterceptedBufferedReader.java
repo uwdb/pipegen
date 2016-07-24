@@ -14,8 +14,15 @@ public class InterceptedBufferedReader extends BufferedReader {
                 : new InterceptedBufferedReader(reader);
     }
 
-    public InterceptedBufferedReader(Reader reader, int i) {
-        super(reader, i);
+    public static BufferedReader intercept(Reader reader, int size) throws IOException {
+        return RuntimeConfiguration.getInstance().isOptimized() &&
+                reader instanceof OptimizedInterceptedInputStreamReader
+                ? new OptimizedInterceptedBufferedReader((OptimizedInterceptedInputStreamReader)reader, size)
+                : new InterceptedBufferedReader(reader, size);
+    }
+
+    public InterceptedBufferedReader(Reader reader, int size) {
+        super(reader, size);
         if(reader instanceof OptimizedInterceptedInputStreamReader)
             throw new RuntimeException(
                     "Data pipe failure: attempt to use optimized reader with unoptimized buffered reader");

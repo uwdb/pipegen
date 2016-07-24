@@ -1,7 +1,6 @@
 package org.brandonhaynes.pipegen.mutation.rules;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Lists;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 import org.brandonhaynes.pipegen.configuration.tasks.Task;
@@ -9,7 +8,7 @@ import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.stream.StreamSupport;
 
 public abstract class ModificationRule implements Rule {
     protected final Class sourceClass;
@@ -21,13 +20,13 @@ public abstract class ModificationRule implements Rule {
     }
 
     public boolean isApplicable(TraceResult trace) {
-        return !getNodes(trace).isEmpty();
+        return !getNodesWithState(trace).iterator().hasNext();
     }
 
     public boolean apply(TraceResult trace) throws IOException, NotFoundException, CannotCompileException {
         boolean result = false;
 
-        for(JsonNode node: getNodes(trace))
+        for(JsonNode node: getNodesWithState(trace))
             if(isRelevantCallSite(node))
                 result |= apply(node);
 
@@ -57,12 +56,15 @@ public abstract class ModificationRule implements Rule {
         return task.getModifiedCallSites().contains(frame);
     }
 
-    private static Collection<JsonNode> getNodes(TraceResult trace) {
-        Collection<JsonNode> nodes = Lists.newArrayList();
+    private static Iterable<JsonNode> getNodesWithState(TraceResult trace) {
+        return StreamSupport.stream(trace.getNodes().spliterator(), false)
+                            .filter(node -> node.findValue("state") != null)::iterator;
+        //return trace.getNodes()
+        //Collection<JsonNode> nodes = Lists.newArrayList();
 
-        for(JsonNode entry: trace.getRoot())
-            if(entry.findValue("state") != null)
-                nodes.add(entry);
-        return nodes;
+        //for(JsonNode entry: trace.getNodes())
+        //    if(entry.findValue("state") != null)
+        //        nodes.add(entry);
+        //return nodes;
     }
 }

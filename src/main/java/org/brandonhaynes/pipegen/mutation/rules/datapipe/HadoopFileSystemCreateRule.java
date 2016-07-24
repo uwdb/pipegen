@@ -110,7 +110,7 @@ public class HadoopFileSystemCreateRule implements Rule {
     private Collection<JsonNode> getNodes(TraceResult trace) {
         Collection<JsonNode> nodes = Lists.newArrayList();
 
-        for(JsonNode entry: trace.getRoot())
+        for(JsonNode entry: trace.getNodes())
             if(entry.findValue("state") != null)
                 nodes.add(entry);
         return nodes;

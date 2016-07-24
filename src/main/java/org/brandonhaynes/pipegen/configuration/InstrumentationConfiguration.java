@@ -36,7 +36,7 @@ public class InstrumentationConfiguration {
              Integer.parseInt(yaml.get("timeout").toString()),
              makeAbsolutePath(configuration, yaml.get("trace")),
              makeAbsolutePath(configuration, yaml.get("agent")),
-             makeAbsolutePath(configuration, yaml.get("logs")),
+             makeAbsolutePath(configuration, yaml.get("logPath")),
              Pattern.compile(yaml.get("commands").toString()),
              Pattern.compile(yaml.get("classes").toString()),
              YamlUtilities.getClassPaths(configuration,

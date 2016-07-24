@@ -8,16 +8,18 @@ import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
 
 import javax.annotation.Nonnull;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.FileChannel;
+import java.nio.file.Paths;
 
 public class InterceptedFileInputStream extends FileInputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
+
+	public static FileInputStream intercept(File file) throws IOException {
+		return intercept(file.toString());
+	}
 
 	public static FileInputStream intercept(String filename) throws IOException {
 		if(!RuntimeConfiguration.getInstance().getFilenamePattern().matcher(filename).matches())
@@ -39,8 +41,9 @@ public class InterceptedFileInputStream extends FileInputStream {
         super(nullDescriptor);
         this.filename = filename;
 		this.serverSocket = new ServerSocket(0);
-		this.entry = new WorkerDirectoryClient(InterceptUtilities.getSystemName(filename)).registerImport(
-				serverSocket.getInetAddress().getHostName(), serverSocket.getLocalPort());
+		this.entry = new WorkerDirectoryClient(InterceptUtilities
+                .getSystemName(Paths.get(filename).toAbsolutePath().toString()))
+                .registerImport(serverSocket.getInetAddress().getHostName(), serverSocket.getLocalPort());
 		this.socket = this.serverSocket.accept();
 		this.stream = this.socket.getInputStream();
 		this.metadata = InterceptMetadata.read(this.stream);

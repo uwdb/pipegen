@@ -9,7 +9,7 @@ instrumentation:
   timeout: 60
   trace: $DIR/templates/ImportTracer.java
   agent: $DIR/lib/btrace-agent.jar
-  logs: /tmp
+  logPath: /tmp
   commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
   classes: .*GradleWorkerMain
   debug: false
@@ -17,14 +17,6 @@ optimization:
   classPaths:
     - build/libs/myria-0.1.jar
     - build/libs/commons-csv-1.1.jar
-  excludeClassPaths:
-    - build/libs/scala*.jar
-    - build/libs/commons-beanutils*.jar
-    - build/libs/jetty*.jar
-    - build/libs/a*.jar
-    - build/libs/j*.jar
-    - build/libs/s*.jar
-    - build/libs/x*.jar
 datapipe:
   import: ./gradlew -Dtest.single=FileScanTest cleanTest test #-Dtest.debug
   export: ./gradlew -Dtest.single=DataSinkTest cleanTest test

@@ -49,11 +49,8 @@ public class HostListener implements sun.jvmstat.monitor.event.HostListener {
                         log.info("Attaching to " + MonitoredVmUtil.mainClass(vm, true));
                         actionsInProgress.incrementAndGet();
                         actionsSucceeding.addAndGet(action.apply((Integer) pid) ? 1 : 0);
+                    } finally {
                         actionsInProgress.decrementAndGet();
-                    } catch(RuntimeException e) {
-                        log.info("Ignoring runtime exception");
-                        actionsInProgress.decrementAndGet();
-                        e.printStackTrace();
                     }
             }
         } catch (MonitorException | URISyntaxException e) {
