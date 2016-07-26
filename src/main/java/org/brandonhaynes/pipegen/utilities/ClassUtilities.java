@@ -51,12 +51,14 @@ public class ClassUtilities {
             add(InterceptedBufferedWriter.class);
             add(InterceptedInputStreamReader.class);
             add(InterceptedBufferedReader.class);
+            add(InterceptedBufferedOutputStream.class);
             add(OptimizedInterceptedFileOutputStream.class);
             add(OptimizedInterceptedFileInputStream.class);
             add(OptimizedInterceptedOutputStreamWriter.class);
             add(OptimizedInterceptedBufferedWriter.class);
             add(OptimizedInterceptedInputStreamReader.class);
             add(OptimizedInterceptedBufferedReader.class);
+            add(OptimizedInterceptedBufferedOutputStream.class);
             add(InterceptUtilities.class);
             add(InterceptMetadata.class);
             add(RuntimeConfiguration.class);

@@ -122,6 +122,21 @@ public class ImportTracer {
         println(buffer.toString());
     }
 
+    @OnMethod(clazz="+java.io.BufferedOutputStream",
+            method="<init>")
+    public static void OnBufferedOutputStream(@Self Object self, AnyType[] args) {
+        StringBuilder buffer = new StringBuilder();
+
+        buffer.append("Entry:").append(LINE_SEPARATOR);
+        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+        buffer.append(probeLine()).append(LINE_SEPARATOR);
+        printArray(buffer, args);
+        printFields(buffer, self);
+        jstack(buffer);
+
+        println(buffer.toString());
+    }
+
     @OnMethod(clazz="+java.io.BufferedReader",
             method="<init>")
     //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))

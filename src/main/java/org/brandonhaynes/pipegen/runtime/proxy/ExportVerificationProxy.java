@@ -87,9 +87,7 @@ public class ExportVerificationProxy implements VerificationProxy, Runnable {
                         InterceptMetadata metadata = InterceptMetadata.read(stream);
                         log.info(String.format("Receiving %s from exporter", metadata.filename));
 
-                        if(!basePath.resolve(Paths.get(metadata.filename)).getParent().toFile().mkdirs())
-                            throw new IOException("Unable to create parent paths for " +
-                                                  basePath.resolve(Paths.get(metadata.filename)));
+                        basePath.resolve(Paths.get(metadata.filename)).getParent().toFile().mkdirs();
 
                         try (OutputStream output = new FileOutputStream(basePath.resolve(Paths.get(metadata.filename)).toFile())) {
                             int bytesRead;

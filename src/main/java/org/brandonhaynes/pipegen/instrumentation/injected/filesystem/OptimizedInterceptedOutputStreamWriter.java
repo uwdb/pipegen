@@ -1,26 +1,50 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
+import sun.nio.cs.StreamEncoder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
 
 public class OptimizedInterceptedOutputStreamWriter extends OutputStreamWriter {
 	private final OptimizedInterceptedFileOutputStream outputStream;
+    private final StreamEncoder encoder;
 
     OptimizedInterceptedOutputStreamWriter(OptimizedInterceptedFileOutputStream outputStream) {
         super(outputStream);
 		this.outputStream = outputStream;
+
+        try {
+            this.encoder = StreamEncoder.forOutputStreamWriter(outputStream, this, (String)null);
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
 	}
 
-    protected OptimizedInterceptedOutputStreamWriter(OutputStream outputStream) {
-        super(outputStream);
-        this.outputStream = null;
+    OptimizedInterceptedOutputStreamWriter(OptimizedInterceptedFileOutputStream outputStream, Charset charset) {
+        super(outputStream, charset);
+        this.outputStream = outputStream;
+        this.encoder = StreamEncoder.forOutputStreamWriter(outputStream, this, charset);
+    }
+
+    OptimizedInterceptedOutputStreamWriter(OptimizedInterceptedFileOutputStream outputStream, CharsetEncoder encoder) {
+        super(outputStream, encoder);
+        this.outputStream = outputStream;
+        this.encoder = StreamEncoder.forOutputStreamWriter(outputStream, this, encoder);
+    }
+
+    OptimizedInterceptedOutputStreamWriter(OptimizedInterceptedFileOutputStream outputStream, String charsetName)
+            throws UnsupportedEncodingException {
+        super(outputStream, charsetName);
+        this.outputStream = outputStream;
+        this.encoder = StreamEncoder.forOutputStreamWriter(outputStream, this, charsetName);
     }
 
     public void write(AugmentedString s) throws IOException {
