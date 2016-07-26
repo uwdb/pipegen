@@ -1,4 +1,4 @@
-package org.brandonhaynes.pipegen.mutation.rules.optimization;
+package org.brandonhaynes.pipegen.mutation.rules.optimization.sinks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import javassist.CannotCompileException;
@@ -10,13 +10,14 @@ import org.brandonhaynes.pipegen.mutation.rules.ModificationRule;
 
 import java.io.IOException;
 
-class ExportSinkRule extends ModificationRule {
-    ExportSinkRule(OptimizationTask task) {
+public class BufferedWriterSinkRule extends ModificationRule {
+    public BufferedWriterSinkRule(OptimizationTask task) {
         super(task, InterceptedBufferedWriter.class);
     }
 
     @Override
-    protected boolean modifyCallSite(JsonNode node, StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
+    protected boolean modifyCallSite(JsonNode node, StackFrame frame)
+            throws IOException, NotFoundException, CannotCompileException {
         task.getModifiedCallSites().add(getApplicationStackFrame(node));
         return false;
     }
@@ -33,9 +34,9 @@ class ExportSinkRule extends ModificationRule {
     }
 
     private StackFrame getApplicationStackFrame(JsonNode node) {
-        for(int i = 0; i < node.get("state").size(); i++) {
+        for(int i = 0; i < node.get("stack").size(); i++) {
             StackFrame frame = new StackFrame(node.get("stack").get(i).asText());
-            if(!frame.getClassName().startsWith("java."))
+            if(!frame.getClassName().startsWith("java.") && !frame.getClassName().startsWith("sun."))
                 return frame;
         }
 

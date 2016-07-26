@@ -4,6 +4,7 @@ import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.tasks.ExportOptimizationTask;
+import org.brandonhaynes.pipegen.configuration.tasks.ImportOptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.OptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.Task;
 import org.brandonhaynes.pipegen.instrumentation.InstrumentationListener;
@@ -21,8 +22,8 @@ public class DataPipeTasks {
 
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
-        //if(create(configuration.importTask))
-        //    optimize(configuration, () -> new ImportOptimizationTask(configuration));
+        if(create(configuration.importTask))
+            optimize(configuration, () -> new ImportOptimizationTask(configuration));
         if(create(configuration.exportTask))
             optimize(configuration, () -> new ExportOptimizationTask(configuration));
     }

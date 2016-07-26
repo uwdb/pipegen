@@ -1,7 +1,6 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import com.sun.btrace.AnyType;
-import com.sun.btrace.annotations.*;
 import org.apache.hadoop.fs.Path;
 
 import java.lang.reflect.Field;
@@ -9,6 +8,7 @@ import java.lang.reflect.Modifier;
 
 import static com.sun.btrace.BTraceUtils.*;
 
+//TODO clean this up
 @BTrace(unsafe=true)
 public class ImportTracer {
     @OnMethod(clazz="+java.lang.Readable",
@@ -34,8 +34,25 @@ public class ImportTracer {
             //@OnMethod(clazz="+org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter",
             method="append")
 //              location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
-    public static void OnInterceptedWriterWrite(@Self Object self, AnyType[] args) {
+    public static void OnInterceptedWriterAppend(@Self Object self, AnyType[] args) {
         if(self.getClass().getName().equals("org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter")) {
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.append("Entry:").append(LINE_SEPARATOR);
+            buffer.append(classOf(self)).append(LINE_SEPARATOR);
+            buffer.append(probeLine()).append(LINE_SEPARATOR);
+            printArray(buffer, new AnyType[0]);
+            printFields(buffer, self);
+            jstack(buffer);
+
+            println(buffer.toString());
+        }
+    }
+
+    @OnMethod(clazz="+java.io.OutputStreamWriter",
+            method="write")
+    public static void OnInterceptedWriterWrite(@Self Object self, AnyType[] args) {
+        if(self.getClass().getName().equals("org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedOutputStreamWriter")) {
             StringBuilder buffer = new StringBuilder();
 
             buffer.append("Entry:").append(LINE_SEPARATOR);
@@ -280,7 +297,7 @@ public class ImportTracer {
                 buf.append(f.getName());
                 buf.append('=');
                 try {
-                    buf.append(Strings.str(f.get(obj)).replace("\n", "\\n"));
+                    buf.append(Strings.str(f.get(obj)).replace("\n", "\\n").replace("\0", "\\\\0"));
                 } catch (Exception exp) {
                     throw translate(exp);
                 }
