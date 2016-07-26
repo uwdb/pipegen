@@ -3,6 +3,7 @@ package org.brandonhaynes.pipegen.utilities;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.NotFoundException;
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.*;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
@@ -61,7 +62,7 @@ public class ClassUtilities {
             add(RuntimeConfiguration.class);
             add(WorkerDirectoryClient.class);
             add(WorkerDirectoryEntry.class);
-            add(WorkerDirectoryEntry.Direction.class);
+            add(Direction.class);
 
             add(org.brandonhaynes.pipegen.instrumentation.injected.java.String.class);
             add(org.brandonhaynes.pipegen.instrumentation.injected.java.StringBuffer.class);
@@ -71,6 +72,8 @@ public class ClassUtilities {
             add(ColumnUtilities.class);
             add(StreamUtilities.class);
             add(StringUtilities.class);
+            add(PathUtilities.class);
+            add(ThreadUtilities.class);
             add(CompositeVector.class);
             add(CompositeVector.Accessor.class);
             add(CompositeVector.Mutator.class);

@@ -2,7 +2,6 @@ package org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_1_2_1;
 
 import org.apache.hadoop.io.Text;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
-import org.jboss.util.Strings;
 
 import java.io.DataInput;
 import java.io.DataOutput;

@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.configuration.tasks;
 
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.mutation.rules.optimization.ExportRule;
 import org.brandonhaynes.pipegen.runtime.proxy.ExportVerificationProxy;
@@ -30,4 +31,5 @@ public class ExportOptimizationTask extends BaseTask implements OptimizationTask
     public Rule getRule() {
         return rule;
     }
+    public Direction getDirection() { return Direction.EXPORT; }
 }

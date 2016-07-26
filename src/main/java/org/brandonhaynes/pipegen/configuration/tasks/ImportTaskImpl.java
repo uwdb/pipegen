@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.configuration.tasks;
 
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.Script;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.mutation.rules.datapipe.ImportRule;
@@ -28,4 +29,5 @@ public class ImportTaskImpl extends BaseTask implements ImportTask {
     public Rule getRule() {
         return rule;
     }
+    public Direction getDirection() { return Direction.IMPORT; }
 }

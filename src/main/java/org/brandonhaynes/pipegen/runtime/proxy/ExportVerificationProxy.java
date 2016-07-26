@@ -62,26 +62,49 @@ public class ExportVerificationProxy implements VerificationProxy, Runnable {
     }
 
     private synchronized void verifyImport() throws IOException {
-        log.info("Beginning verification");
-
         WorkerDirectoryEntry importEntry = client.registerImport(serverSocket.getInetAddress().getHostName(),
                                                                  serverSocket.getLocalPort());
         log.info(String.format("Obtained directory entry %d for path %s", importEntry.getEntryId(),
                                                                           importEntry.getSystemName()));
 
-        try(Socket socket = serverSocket.accept()) {
-            try(InputStream stream = socket.getInputStream()) {
-                InterceptMetadata metadata = InterceptMetadata.read(stream);
-                log.info(String.format("Receiving %s from exporter", metadata.filename));
+        new ImportVerificationHandler(serverSocket.accept(), basePath);
+    }
 
-                basePath.resolve(Paths.get(metadata.filename)).getParent().toFile().mkdirs();
-                try(OutputStream output = new FileOutputStream(basePath.resolve(Paths.get(metadata.filename)).toFile())) {
-                    int bytesRead;
-                    byte[] buffer = new byte[4096];
+    private static class ImportVerificationHandler implements Runnable {
+        private final Socket handledSocket;
+        private final Path basePath;
 
-                    while ((bytesRead = stream.read(buffer)) != -1)
-                        output.write(buffer, 0, bytesRead);
+        ImportVerificationHandler(Socket socket, Path basePath) {
+            this.handledSocket = socket;
+            this.basePath = basePath;
+            new Thread(this).start();
+        }
+
+        public synchronized void run() {
+            try {
+                try (Socket socket = handledSocket) {
+                    try (InputStream stream = socket.getInputStream()) {
+                        InterceptMetadata metadata = InterceptMetadata.read(stream);
+                        log.info(String.format("Receiving %s from exporter", metadata.filename));
+
+                        if(!basePath.resolve(Paths.get(metadata.filename)).getParent().toFile().mkdirs())
+                            throw new IOException("Unable to create parent paths for " +
+                                                  basePath.resolve(Paths.get(metadata.filename)));
+
+                        try (OutputStream output = new FileOutputStream(basePath.resolve(Paths.get(metadata.filename)).toFile())) {
+                            int bytesRead;
+                            byte[] buffer = new byte[65535];
+                            while ((bytesRead = stream.read(buffer)) != -1)
+                                output.write(buffer, 0, bytesRead);
+                            output.flush();
+                            ((FileOutputStream) output).getChannel().force(true);
+                            output.close();
+                            socket.getOutputStream().write(0);
+                        }
+                    }
                 }
+            } catch(IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }

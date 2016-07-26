@@ -2,6 +2,7 @@ package org.brandonhaynes.pipegen.runtime.directory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
+import org.brandonhaynes.pipegen.configuration.Direction;
 
 import java.util.Map;
 import java.util.concurrent.BlockingDeque;
@@ -9,7 +10,7 @@ import java.util.concurrent.BlockingDeque;
 public class ProductionWorkerDirectory implements WorkerDirectory {
     private final Map<String, BlockingDeque<WorkerDirectoryEntry>> entries = Maps.newConcurrentMap();
 
-    public WorkerDirectoryEntry add(String systemName, WorkerDirectoryEntry.Direction direction,
+    public WorkerDirectoryEntry add(String systemName, Direction direction,
                                     String hostname, int port) {
         WorkerDirectoryEntry entry = new WorkerDirectoryEntry(systemName, direction, hostname, port);
         add(entry);

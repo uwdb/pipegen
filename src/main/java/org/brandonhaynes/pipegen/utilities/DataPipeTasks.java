@@ -1,9 +1,9 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.configuration.tasks.ExportOptimizationTask;
-import org.brandonhaynes.pipegen.configuration.tasks.ImportOptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.OptimizationTask;
 import org.brandonhaynes.pipegen.configuration.tasks.Task;
 import org.brandonhaynes.pipegen.instrumentation.InstrumentationListener;
@@ -21,8 +21,8 @@ public class DataPipeTasks {
 
     public static void create(CompileTimeConfiguration configuration)
             throws IOException, InterruptedException, MonitorException{
-        if(create(configuration.importTask))
-            optimize(configuration, () -> new ImportOptimizationTask(configuration));
+        //if(create(configuration.importTask))
+        //    optimize(configuration, () -> new ImportOptimizationTask(configuration));
         if(create(configuration.exportTask))
             optimize(configuration, () -> new ExportOptimizationTask(configuration));
     }
@@ -76,7 +76,7 @@ public class DataPipeTasks {
     }
 
     private static boolean verifyExistingFunctionality(Task task) throws IOException, InterruptedException {
-        return verify(task.getConfiguration(), true, false) == 0;
+        return verify(task.getConfiguration(), true, false, task.getDirection()) == 0;
     }
 
     private static boolean verifyDataPipeFunctionality(Task task) throws IOException, InterruptedException {
@@ -86,7 +86,7 @@ public class DataPipeTasks {
                 task.getConfiguration().datapipeConfiguration.getLogPropertiesPath());
 
         task.getVerificationProxy().start();
-        int exitValue = verify(task.getConfiguration(), false, false);
+        int exitValue = verify(task.getConfiguration(), false, false, task.getDirection());
         task.getVerificationProxy().stop();
 
         if(directory != null)
@@ -96,13 +96,14 @@ public class DataPipeTasks {
     }
 
     private static int verify(CompileTimeConfiguration configuration, boolean isVerifyingExistingFunctionality,
-                                                                      boolean isTransferOptimized)
+                                                                      boolean isTransferOptimized,
+                                                                      Direction direction)
             throws IOException, InterruptedException {
         log.info(String.format("Verifying %s (%s)", configuration.getSystemName(),
                 isVerifyingExistingFunctionality ? "existing functionality" : "datapipe functionality"));
 
         ProcessBuilder builder = configuration.datapipeConfiguration.getVerifyScript().getProcessBuilder();
-        RuntimeConfiguration.setProcessVerificationMode(builder, !isVerifyingExistingFunctionality);
+        RuntimeConfiguration.setProcessVerificationMode(builder, !isVerifyingExistingFunctionality, direction);
         RuntimeConfiguration.setProcessOptimizationMode(builder, !isVerifyingExistingFunctionality && isTransferOptimized);
         Process process = builder.start();
         process.waitFor();

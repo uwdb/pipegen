@@ -1,5 +1,6 @@
 package org.brandonhaynes.pipegen.runtime.directory;
 
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 
 import java.io.IOException;
@@ -35,15 +36,13 @@ public class WorkerDirectoryClient {
         try(InputStreamReader reader = new InputStreamReader(openStream(getImportUri(systemName, hostname, port)))) {
             int entryId = Integer.parseInt(read(reader, 1024));
             //int entryId = Integer.parseInt(new LineReader(reader).readLine());
-            return new WorkerDirectoryEntry(entryId, systemName, WorkerDirectoryEntry.Direction.IMPORT, hostname, port);
+            return new WorkerDirectoryEntry(entryId, systemName, Direction.IMPORT, hostname, port);
         }
     }
 
     public WorkerDirectoryEntry registerExport() throws IOException {
         try(InputStreamReader reader = new InputStreamReader(openStream(getExportUri(systemName)))) {
             return new WorkerDirectoryEntry(read(reader, 1024).split(","));
-            //return new WorkerDirectoryEntry(new LineReader(reader).readLine().split(","));
-            //return new WorkerDirectoryEntry(Splitter.on(",").split(new LineReader(reader).readLine()).iterator());
         }
     }
 

@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 
 import java.io.FileInputStream;
@@ -83,14 +84,13 @@ public class WorkerDirectoryServer {
     public void stop() { stop(false); }
     public void stop(boolean force) { stop(force ? 0 : 30); }
 
-    private static void onImport(WorkerDirectory directory, HttpExchange exchange)
-            throws IOException {
+    private static void onImport(WorkerDirectory directory, HttpExchange exchange) throws IOException {
         log.info(String.format("Begin import: %s", exchange.getRequestURI()));
         Map<String, String> tokens = parseQuerystring(exchange.getRequestURI());
 
         WorkerDirectoryEntry entry = directory.add(
                 tokens.get("system"),
-                WorkerDirectoryEntry.Direction.IMPORT,
+                Direction.IMPORT,
                 tokens.get("hostname"),
                 Integer.parseInt(tokens.get("port")));
 

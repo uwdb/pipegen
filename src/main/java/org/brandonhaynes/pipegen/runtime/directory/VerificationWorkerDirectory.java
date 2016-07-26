@@ -1,13 +1,14 @@
 package org.brandonhaynes.pipegen.runtime.directory;
 
 import com.google.common.collect.Queues;
+import org.brandonhaynes.pipegen.configuration.Direction;
 
 import java.util.concurrent.BlockingDeque;
 
 public class VerificationWorkerDirectory implements WorkerDirectory {
     private final BlockingDeque<WorkerDirectoryEntry> entries = Queues.newLinkedBlockingDeque();
 
-    public WorkerDirectoryEntry add(String systemName, WorkerDirectoryEntry.Direction direction,
+    public WorkerDirectoryEntry add(String systemName, Direction direction,
                                     String hostname, int port) {
         WorkerDirectoryEntry entry = new WorkerDirectoryEntry(systemName, direction, hostname, port);
         add(entry);

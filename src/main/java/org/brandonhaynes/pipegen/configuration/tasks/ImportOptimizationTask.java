@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.configuration.tasks;
 
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.mutation.rules.optimization.ImportRule;
 import org.brandonhaynes.pipegen.runtime.proxy.ImportVerificationProxy;
@@ -23,4 +24,5 @@ public class ImportOptimizationTask extends BaseTask implements OptimizationTask
     public Rule getRule() {
         return rule;
     }
+    public Direction getDirection() { return Direction.IMPORT; }
 }

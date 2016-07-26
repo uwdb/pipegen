@@ -1,16 +1,12 @@
 package org.brandonhaynes.pipegen.runtime.directory;
 
-import java.nio.file.Paths;
+import org.brandonhaynes.pipegen.configuration.Direction;
+
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WorkerDirectoryEntry {
     private static AtomicInteger nextId = new AtomicInteger(0);
-
-    public enum Direction {
-        IMPORT,
-        EXPORT
-    }
 
     private final int entryId;
     private final String systemName;

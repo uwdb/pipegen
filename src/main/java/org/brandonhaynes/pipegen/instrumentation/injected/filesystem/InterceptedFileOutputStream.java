@@ -1,11 +1,13 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
 import com.google.common.collect.Lists;
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtilities;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
+import org.brandonhaynes.pipegen.utilities.ThreadUtilities;
 
 import javax.annotation.Nonnull;
 import java.io.*;
@@ -17,7 +19,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
 
 	public static FileOutputStream intercept(String filename) throws IOException {
-		if(!RuntimeConfiguration.getInstance().getFilenamePattern().matcher(filename).matches())
+		if(!RuntimeConfiguration.getInstance().getFilenamePattern(Direction.EXPORT).matcher(filename).matches())
             return new FileOutputStream(filename);
         else if(RuntimeConfiguration.getInstance().isInOptimizationMode())
             return new OptimizedInterceptedFileOutputStream(filename);
@@ -26,7 +28,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	}
 
     public static FileOutputStream intercept(File file) throws IOException {
-        if(!RuntimeConfiguration.getInstance().getFilenamePattern().matcher(file.getName()).matches())
+        if(!RuntimeConfiguration.getInstance().getFilenamePattern(Direction.EXPORT).matcher(file.getName()).matches())
             return new FileOutputStream(file);
         else if(RuntimeConfiguration.getInstance().isInOptimizationMode())
             return new OptimizedInterceptedFileOutputStream(file);
@@ -40,7 +42,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	protected final OutputStream stream;
 
     public InterceptedFileOutputStream(File file) throws IOException {
-        this(file.getName(), false);
+        this(file.toString());
     }
 
     public InterceptedFileOutputStream(String filename) throws IOException {
@@ -50,7 +52,7 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	protected InterceptedFileOutputStream(String filename, boolean deferMetadata) throws IOException {
 		super(nullDescriptor);
 		this.filename = filename;
-		this.entry = new WorkerDirectoryClient(InterceptUtilities.getSystemName(filename)).registerExport();
+		this.entry = new WorkerDirectoryClient(InterceptUtilities.getSystemName(filename, Direction.EXPORT)).registerExport();
 		this.socket = new Socket(entry.getHostname(), entry.getPort());
 		this.stream = this.socket.getOutputStream();
         if(!deferMetadata)
@@ -96,9 +98,11 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 		flush();
 		super.close();
 		stream.close();
-        if(socket != null)
-    		socket.close();
-	}
+        if(socket != null) {
+            socket.close();
+            ThreadUtilities.UncheckedSleep(RuntimeConfiguration.getInstance().getIoTimeout());
+        }
+    }
 
 	@Override
 	protected void finalize() throws IOException {

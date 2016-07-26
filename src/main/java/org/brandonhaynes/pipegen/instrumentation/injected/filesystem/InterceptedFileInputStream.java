@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.instrumentation.injected.filesystem;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtilities;
@@ -12,7 +13,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.FileChannel;
-import java.nio.file.Paths;
 
 public class InterceptedFileInputStream extends FileInputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
@@ -22,7 +22,7 @@ public class InterceptedFileInputStream extends FileInputStream {
 	}
 
 	public static FileInputStream intercept(String filename) throws IOException {
-		if(!RuntimeConfiguration.getInstance().getFilenamePattern().matcher(filename).matches())
+		if(!RuntimeConfiguration.getInstance().getFilenamePattern(Direction.IMPORT).matcher(filename).matches())
 			return new FileInputStream(filename);
 		else if(RuntimeConfiguration.getInstance().isOptimized())
 			return new OptimizedInterceptedFileInputStream(filename);
@@ -42,7 +42,7 @@ public class InterceptedFileInputStream extends FileInputStream {
         this.filename = filename;
 		this.serverSocket = new ServerSocket(0);
 		this.entry = new WorkerDirectoryClient(InterceptUtilities
-                .getSystemName(Paths.get(filename).toAbsolutePath().toString()))
+				.getSystemName(filename, Direction.IMPORT))
                 .registerImport(serverSocket.getInetAddress().getHostName(), serverSocket.getLocalPort());
 		this.socket = this.serverSocket.accept();
 		this.stream = this.socket.getInputStream();
