@@ -95,6 +95,7 @@ public class FileOutputStreamRule implements Rule {
                                !path.contains(".xml") &&
                                !path.contains(".so") &&
                                !path.contains(".jar") &&
+                               !path.contains(".out") &&
                                !path.contains(".log");
     }
 

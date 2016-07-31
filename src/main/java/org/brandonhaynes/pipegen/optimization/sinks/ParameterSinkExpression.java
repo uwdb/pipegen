@@ -19,7 +19,8 @@ public class ParameterSinkExpression implements SinkExpression {
     ParameterSinkExpression() {}
 
     @Override
-    public boolean isApplicable(Set<Unit> input, Unit node, Set<Unit> output) {
+    public boolean isApplicable(UnitGraph graph, Set<Unit> input, Unit node, Set<Unit> output,
+                                Set<Value> taintedValues, Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed) {
         return !input.isEmpty() &&
                node instanceof IdentityStmt &&
                ((IdentityStmt)node).getRightOp() instanceof ParameterRef;
@@ -27,13 +28,13 @@ public class ParameterSinkExpression implements SinkExpression {
 
     @Override
     public void propagateTaint(UnitGraph graph, Set<Unit> input, Unit node, Set<Unit> output,
-                               Set<Value> taintedValues, Queue<MethodAnalysis> methods) {
-        assert(isApplicable(input, node, output));
+                               Set<Value> taintedValues, Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed) {
+        assert(isApplicable(graph, input, node, output, taintedValues, queue, processed));
 
         //TODO isApplicable should have access to tainted values...
         if(isTainted(taintedValues, node))
-            methods.addAll(getCallers(graph.getBody().getMethod(),
-                           ((IdentityStmt) node).getRightOp()));
+            queue.addAll(getCallers(graph.getBody().getMethod(),
+                         ((IdentityStmt) node).getRightOp()));
     }
 
     private static List<MethodAnalysis> getCallers(SootMethod callee, Value value) {

@@ -19,7 +19,10 @@ public class IoSinkExpressions implements SinkExpression {
         statements = Lists.newArrayList(
                 new InvokeMethodSinkExpression(scene, OutputStreamWriter.class, "write"),
                 new InvokeMethodSinkExpression(scene, Appendable.class, "append"),
-                new ParameterSinkExpression());
+                new ParameterSinkExpression(),
+                new ArrayIndexExpression(),
+                new AssignmentExpression(),
+                new ReturnStatementSink());
                 //new InvokeMethodSinkExpression(InterceptedFileOutputStream.class, "write"));
     }
 
@@ -28,15 +31,17 @@ public class IoSinkExpressions implements SinkExpression {
     }
 
     @Override
-    public boolean isApplicable(Set<Unit> input, Unit node, Set<Unit> output) {
-        return statements.stream().anyMatch(s -> s.isApplicable(input, node, output));
+    public boolean isApplicable(UnitGraph graph, Set<Unit> input, Unit node, Set<Unit> output,
+                                Set<Value> taintedValues, Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed) {
+        return statements.stream().anyMatch(s -> s.isApplicable(graph, input, node, output,
+                                                                taintedValues, queue, processed));
     }
 
     @Override
     public void propagateTaint(UnitGraph graph, Set<Unit> input, Unit node, Set<Unit> output,
-                               Set<Value> taintedValues, Queue<MethodAnalysis> methods) {
+                               Set<Value> taintedValues, Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed) {
         statements.stream()
-                  .filter(s -> s.isApplicable(input, node, output))
-                  .forEach(s -> s.propagateTaint(graph, input, node, output, taintedValues, methods));
+                  .filter(s -> s.isApplicable(graph, input, node, output, taintedValues, queue, processed))
+                  .forEach(s -> s.propagateTaint(graph, input, node, output, taintedValues, queue, processed));
     }
 }

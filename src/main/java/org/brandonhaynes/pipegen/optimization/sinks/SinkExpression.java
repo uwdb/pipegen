@@ -9,8 +9,9 @@ import java.util.Queue;
 import java.util.Set;
 
 public interface SinkExpression {
-    boolean isApplicable(Set<Unit> input, Unit node, Set<Unit> output);
+    boolean isApplicable(UnitGraph graph, Set<Unit> input, Unit node, Set<Unit> output, Set<Value> taintedValues,
+                         Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed);
     void propagateTaint(UnitGraph graph, Set<Unit> input, Unit node, Set<Unit> output,
-                        Set<Value> taintedValues, Queue<MethodAnalysis> methods);
+                        Set<Value> taintedValues, Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed);
 }
 

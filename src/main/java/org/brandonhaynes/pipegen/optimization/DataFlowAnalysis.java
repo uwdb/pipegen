@@ -21,32 +21,36 @@ public class DataFlowAnalysis extends BackwardFlowAnalysis<Unit, Set<Unit>> {
 
     private final Map<Unit, Set<Set<Unit>>> taintedUnits;
     private final Set<Value> taintedValues;
-    private final Queue<MethodAnalysis> taintedCallers;
+    private final Queue<MethodAnalysis> pendingTaintedCallers;
+    private final Set<MethodAnalysis> processedTaintedCallers;
     private final SinkExpression sinkExpression;
     private final CompositeExpressionTransformer transformExpression;
     private final UnitGraph graph;
 
-    public DataFlowAnalysis(Queue<MethodAnalysis> queue, MethodAnalysis current,
+    public DataFlowAnalysis(Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed, MethodAnalysis current,
                             SinkExpression sinkExpression, CompositeExpressionTransformer transformExpression) {
-        this(queue, current.getCaller(), current.getTaintedParameters(),
+        this(queue, processed, current.getCaller(), current.getTaintedParameters(),
                 sinkExpression, transformExpression);
     }
 
-    public DataFlowAnalysis(Queue<MethodAnalysis> queue, SootMethod method, Set<Value> taintedValues,
-                            SinkExpression sinkExpression, CompositeExpressionTransformer transformExpression) {
-        this(queue, new ExceptionalUnitGraph(method.getActiveBody()), taintedValues,
+    public DataFlowAnalysis(Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed, SootMethod method,
+                            Set<Value> taintedValues, SinkExpression sinkExpression,
+                            CompositeExpressionTransformer transformExpression) {
+        this(queue, processed, new ExceptionalUnitGraph(method.getActiveBody()), taintedValues,
              sinkExpression, transformExpression);
     }
 
-    public DataFlowAnalysis(Queue<MethodAnalysis> queue, UnitGraph graph, Set<Value> taintedValues,
-                            SinkExpression sinkExpression, CompositeExpressionTransformer transformExpression) {
+    public DataFlowAnalysis(Queue<MethodAnalysis> queue, Set<MethodAnalysis> processed, UnitGraph graph,
+                            Set<Value> taintedValues, SinkExpression sinkExpression,
+                            CompositeExpressionTransformer transformExpression) {
         super(graph);
         this.graph = graph;
         this.taintedUnits = Maps.newHashMap();
-        this.taintedCallers = queue;
+        this.pendingTaintedCallers = queue;
         this.taintedValues = taintedValues;
         this.sinkExpression = sinkExpression;
         this.transformExpression = transformExpression;
+        this.processedTaintedCallers = processed;
         doAnalysis();
     }
 
@@ -81,7 +85,7 @@ public class DataFlowAnalysis extends BackwardFlowAnalysis<Unit, Set<Unit>> {
         output.clear();
         output.addAll(input);
 
-        if(sinkExpression.isApplicable(input, node, output))
+        if(sinkExpression.isApplicable(graph, input, node, output, taintedValues, pendingTaintedCallers, processedTaintedCallers))
             taintNode(node, input, output);
         if(transformExpression.isApplicable(input, node, output))
             transformExpression.transform(input, node, output, transformExpression);
@@ -90,15 +94,10 @@ public class DataFlowAnalysis extends BackwardFlowAnalysis<Unit, Set<Unit>> {
     private void taintNode(Unit node, Set<Unit> input, Set<Unit> output) {
         log.info("Tainting");
 
-        sinkExpression.propagateTaint(graph, input, node, output, taintedValues, taintedCallers);
+        sinkExpression.propagateTaint(graph, input, node, output, taintedValues, pendingTaintedCallers, processedTaintedCallers);
         taintedUnits.putIfAbsent(node, Sets.newHashSet());
         taintedUnits.get(node).add(input);
 
         output.add(node);
-    }
-
-    private void transformNode() {
-        // perform transform
-        // remove applicable values from taintedParameter list
     }
 }

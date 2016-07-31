@@ -18,9 +18,13 @@ import java.nio.channels.FileChannel;
 public class InterceptedFileOutputStream extends FileOutputStream {
 	private static FileDescriptor nullDescriptor = new FileDescriptor();
 
-	public static FileOutputStream intercept(String filename) throws IOException {
+    public static FileOutputStream intercept(String filename) throws IOException {
+        return intercept(filename, false);
+    }
+
+	public static FileOutputStream intercept(String filename, boolean append) throws IOException {
 		if(!RuntimeConfiguration.getInstance().getFilenamePattern(Direction.EXPORT).matcher(filename).matches())
-            return new FileOutputStream(filename);
+            return new FileOutputStream(filename, append);
         else if(RuntimeConfiguration.getInstance().isInOptimizationMode())
             return new OptimizedInterceptedFileOutputStream(filename);
         else
@@ -28,8 +32,12 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	}
 
     public static FileOutputStream intercept(File file) throws IOException {
+        return intercept(file, false);
+    }
+
+    public static FileOutputStream intercept(File file, boolean append) throws IOException {
         if(!RuntimeConfiguration.getInstance().getFilenamePattern(Direction.EXPORT).matcher(file.getName()).matches())
-            return new FileOutputStream(file);
+            return new FileOutputStream(file, append);
         else if(RuntimeConfiguration.getInstance().isInOptimizationMode())
             return new OptimizedInterceptedFileOutputStream(file);
         else
