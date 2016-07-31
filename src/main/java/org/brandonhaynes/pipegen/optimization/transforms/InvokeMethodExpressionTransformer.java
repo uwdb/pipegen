@@ -138,7 +138,8 @@ public class InvokeMethodExpressionTransformer implements ExpressionTransformer 
 
     private List<Type> getArgumentTypes(InvokeExpr invocation) {
         List<Type> arguments = addThisAsParameter && invocation instanceof InstanceInvokeExpr
-                ? Lists.newArrayList(((InstanceInvokeExpr)invocation).getBase().getType())
+                ? Lists.newArrayList(Scene.v().getType(targetClass.getName()))
+                //? Lists.newArrayList(((InstanceInvokeExpr)invocation).getBase().getType())
                 : Lists.newArrayList();
         arguments.addAll(invocation.getArgs().stream().map(Value::getType).collect(Collectors.toList()));
         return arguments;
