@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.mutation;
 
 import javassist.*;
+import javassist.expr.ConstructorCall;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
 import javassist.expr.NewExpr;
@@ -68,13 +69,27 @@ public class ExpressionReplacer {
             }
 
             public void edit(MethodCall expression) throws CannotCompileException {
+                //TODO line number matching is a horrible way to do this; disambiguate with Jimple?
                 if(!behavior.getDeclaringClass().getName().startsWith(PipeGen.class.getPackage().getName()) &&
                         !expression.getClassName().startsWith(PipeGen.class.getPackage().getName()) &
                         expression.getLineNumber() == line &&
-                        expression.getMethodName().matches(targetExpression)) {
+                        (expression.getClassName() + "." + expression.getMethodName()).matches(targetExpression)) {
 
-                        log.info("Modifying " + behavior.getLongName() + ":" + expression.getSignature());
-                        expression.replace(replacementExpression);
+                        log.info("Modifying " + behavior.getLongName() + ":" + expression.getMethodName() +
+                                                                               expression.getSignature());
+                        try {
+                            expression.replace(replacementExpression);
+                        } catch(CannotCompileException e) {
+                            log.warning("Could not modify call site: " + e);
+                        }
+                }
+            }
+
+            public void edit(ConstructorCall expression) throws CannotCompileException {
+                try {
+                    replaceExpression(expression.getConstructor(), line, targetExpression, replacementExpression);
+                } catch(NotFoundException|IOException e) {
+                    throw new CannotCompileException(e);
                 }
             }
         });

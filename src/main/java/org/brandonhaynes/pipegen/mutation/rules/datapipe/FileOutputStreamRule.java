@@ -71,7 +71,8 @@ public class FileOutputStreamRule implements Rule {
                 task.getConfiguration().getVersion(),
                 task.getConfiguration().getBackupPath());
         task.getModifiedCallSites().add(frame);
-        log.info(String.format("Injected data pipe at %s", frame.getStackFrame()));
+        log.info(String.format("Injected data pipe at %s (jar=%s)", frame.getStackFrame(),
+                task.getConfiguration().instrumentationConfiguration.getClassPool().find(frame.getClassName())));
         return true;
     }
 
@@ -86,7 +87,16 @@ public class FileOutputStreamRule implements Rule {
     private boolean isRelevantCallSite(JsonNode node) {
         String path = getPath(node);
         //TODO
-        if(path != null && !path.equals("null") && node.get("class").asText().equals(sourceClass.getName()))
+        if(path != null && !path.equals("null") && node.get("class").asText().equals(sourceClass.getName()) &&
+                !path.contains(".class") &&
+                !path.contains(".properties") &&
+                !path.contains(".xml") &&
+                !path.contains(".so") &&
+                !path.contains(".crc") &&
+                !path.contains(".bin") &&
+                !path.contains(".jar") &&
+                !path.contains(".out") &&
+                !path.contains(".log"))
             log.info("Path: " + path);
         return  node.get("class").asText().equals(sourceClass.getName()) &&
                 new StackFrame(node.get("stack").get(0).asText()).getMethodName().equals("<init>") &&
@@ -94,6 +104,8 @@ public class FileOutputStreamRule implements Rule {
                                !path.contains(".properties") &&
                                !path.contains(".xml") &&
                                !path.contains(".so") &&
+                               !path.contains(".crc") &&
+                               !path.contains(".bin") &&
                                !path.contains(".jar") &&
                                !path.contains(".out") &&
                                !path.contains(".log");

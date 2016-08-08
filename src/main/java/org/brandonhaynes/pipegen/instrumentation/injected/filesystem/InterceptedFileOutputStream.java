@@ -104,7 +104,6 @@ public class InterceptedFileOutputStream extends FileOutputStream {
 	@Override
 	public void	close() throws IOException {
 		flush();
-		super.close();
 		stream.close();
         if(socket != null) {
             socket.close();

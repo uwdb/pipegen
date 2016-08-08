@@ -88,11 +88,29 @@ public class FileInputStreamRule implements Rule {
     private boolean isRelevantCallSite(JsonNode node) {
         String path = getPath(node);
         //TODO
+        if(path != null && !path.equals("null") && node.get("class").asText().equals(sourceClass.getName()) &&
+                !path.contains(".class") &&
+                !path.contains(".properties") &&
+                !path.contains(".java") &&
+                !path.contains(".xml") &&
+                !path.contains(".so") &&
+                !path.contains(".crc") &&
+                !path.contains(".bin") &&
+                !path.contains(".jar") &&
+                !path.contains(".out") &&
+                !path.contains(".log"))
+            log.info("Path: " + path);
         return node.get("class").asText().equals(sourceClass.getName()) &&
                path != null &&
                !path.contains(".class") &&
                !path.contains(".properties") &&
                !path.contains(".java") &&
+               !path.contains(".xml") &&
+               !path.contains(".so") &&
+               !path.contains(".crc") &&
+               !path.contains(".bin") &&
+               !path.contains(".jar") &&
+               !path.contains(".out") &&
                !path.contains(".log");
     }
 

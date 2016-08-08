@@ -26,7 +26,7 @@ public class RuntimeConfiguration {
     private RuntimeConfiguration(Path configurationFile) {
         // TODO
         this.importFilenamePattern = Pattern.compile(isInVerificationMode(Direction.IMPORT) ? "(?<name>.+)" : "__dbms__(?<name>.+)");
-        this.exportFilenamePattern = Pattern.compile(isInVerificationMode(Direction.EXPORT) ? "(?<name>.+)" : "__dbms__(?<name>.+)");
+        this.exportFilenamePattern = Pattern.compile(isInVerificationMode(Direction.EXPORT) ? "(?<name>^(?!_SUCCESS).+$)" : "__dbms__(?<name>.+)");
         this.workerDirectoryUri = URI.create("http://localhost:8888");
     }
 

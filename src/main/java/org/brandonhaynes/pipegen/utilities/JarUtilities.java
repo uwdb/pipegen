@@ -135,6 +135,7 @@ public class JarUtilities {
                 for (JarEntry entry : getEntryIterator(jar)) {
                     if (!isMatchingEntry(entry, classes))
                         try (InputStream stream = jar.getInputStream(entry)) {
+                            entry.setCompressedSize(-1);
                             stagingJar.putNextEntry(entry);
 
                             while ((bytesRead = stream.read(buffer)) != -1)

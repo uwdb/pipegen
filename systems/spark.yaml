@@ -1,34 +1,26 @@
 name: Spark
-version: 50
+version: 51
 path: /home/bhaynes/research/spark/
 backupPath: /tmp/backup
-classPaths:
-  - assembly/target/scala-2.11/*
-  #- core/target/*
-  #- build/scala-2.11.7/lib/*
-  #- external/mqtt/target/scala-2.11/*
-  #- assembly/target/scala-2.11/*
-  - recurse:jars/*
 instrumentation:
-  port: 7781
+  classPaths:
+    - assembly/target/scala-2.11/*
+    # Must come after the main Spark jar
+    - jars/org/apache/hadoop/hadoop-common/2.6.0/hadoop-common-2.6.0.jar
+  port: 7780
   timeout: 2400
   trace: $DIR/templates/ImportTracer.java
   agent: $DIR/lib/btrace-agent.jar
-  logs: /tmp
-  commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
-  classes: .*Runner
+  logPath: /tmp
+  commands: .*spark/core.*org.apache.spark.FileSuite.*
+  classes: .*Runner.*
   debug: false
+optimization:
+  classPaths:
+    - assembly/target/scala-2.11/*
+    - recurse:jars/*
 datapipe:
-  #build:  build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests package
-  #build:
-  #  - cp pom.compile.xml pom.xml
-  #  - /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -DskipTests install -Dmaven.repo.local=/home/bhaynes/research/spark/jars
-  import: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars
-  export: /home/bhaynes/research/spark/build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars
-  verify:
-    #- sed -i "s/<goal>compile<\\/goal>/<!--<goal>compile<\\/goal>-->/1" pom.xml
-    - cp pom.nocompile.xml pom.xml
-    - ./build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl org.apache.spark:spark-core_2.11 test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars
-    - cp pom.compile.xml pom.xml
-    #- sed -i "s/<!--<goal>compile<\\/goal>-->/<goal>compile<\\/goal>/1" pom.xml
+  import: build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl sql/core -am -q test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars -Dmaven.compile.fork=true -Dmaven.junit.fork=true -Denforcer.skip=true --offline
+  export: build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl sql/core -am -q test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars -Dmaven.compile.fork=true -Dmaven.junit.fork=true -Denforcer.skip=true --offline
+  verify: build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl sql/core -am -q test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars -Dmaven.compile.fork=true -Dmaven.junit.fork=true -Denforcer.skip=true --offline
   debug: true

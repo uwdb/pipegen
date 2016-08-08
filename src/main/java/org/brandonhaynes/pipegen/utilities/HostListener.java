@@ -46,7 +46,8 @@ public class HostListener implements sun.jvmstat.monitor.event.HostListener {
                 if (predicate.test(new ImmutablePair<>(MonitoredVmUtil.mainClass(vm, true),
                                                        MonitoredVmUtil.commandLine(vm))))
                     try {
-                        log.info("Attaching to " + MonitoredVmUtil.mainClass(vm, true));
+                        log.info(String.format("Attaching to %s %s", MonitoredVmUtil.mainClass(vm, true),
+                                                                     MonitoredVmUtil.commandLine(vm)));
                         actionsInProgress.incrementAndGet();
                         actionsSucceeding.addAndGet(action.apply((Integer) pid) ? 1 : 0);
                     } finally {

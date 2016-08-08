@@ -71,6 +71,7 @@ public class MockResultSet implements ResultSet {
     }
 
     @Override
+    @Deprecated
     public BigDecimal getBigDecimal(int i, int i1) throws SQLException {
         return null;
     }
@@ -101,6 +102,7 @@ public class MockResultSet implements ResultSet {
     }
 
     @Override
+    @Deprecated
     public InputStream getUnicodeStream(int i) throws SQLException {
         return null;
     }
@@ -151,6 +153,7 @@ public class MockResultSet implements ResultSet {
     }
 
     @Override
+    @Deprecated
     public BigDecimal getBigDecimal(String s, int i) throws SQLException {
         return null;
     }
@@ -181,6 +184,7 @@ public class MockResultSet implements ResultSet {
     }
 
     @Override
+    @Deprecated
     public InputStream getUnicodeStream(String s) throws SQLException {
         return null;
     }
@@ -312,7 +316,7 @@ public class MockResultSet implements ResultSet {
 
     @Override
     public int getFetchDirection() throws SQLException {
-        return 0;
+        return ResultSet.FETCH_UNKNOWN;
     }
 
     @Override
@@ -327,12 +331,12 @@ public class MockResultSet implements ResultSet {
 
     @Override
     public int getType() throws SQLException {
-        return 0;
+        return ResultSet.TYPE_FORWARD_ONLY;
     }
 
     @Override
     public int getConcurrency() throws SQLException {
-        return 0;
+        return ResultSet.CONCUR_READ_ONLY;
     }
 
     @Override
@@ -732,7 +736,7 @@ public class MockResultSet implements ResultSet {
 
     @Override
     public int getHoldability() throws SQLException {
-        return 0;
+        return ResultSet.HOLD_CURSORS_OVER_COMMIT;
     }
 
     @Override

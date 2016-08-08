@@ -36,10 +36,11 @@ public class ClassUtilities {
         if(args.length != 2)
             System.out.println("Usage: ClassUtilities RemoveFinalFlagFromString class-name");
         else
-            removeFinalFlagFromString(args[1]);
+            for(String className: args[1].split(","))
+                removeFinalFlag(className);
     }
 
-    public static void removeFinalFlagFromString(String className) throws IOException {
+    public static void removeFinalFlag(String className) throws IOException {
         try {
             ClassModifierReplacer.setModifiers(new ClassPool(true), className, Modifier.PUBLIC);
         } catch(NotFoundException| CannotCompileException e) {
