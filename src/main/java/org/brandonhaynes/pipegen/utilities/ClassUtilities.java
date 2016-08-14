@@ -65,6 +65,7 @@ public class ClassUtilities {
             add(InterceptedInputStreamReader.class);
             add(InterceptedBufferedReader.class);
             add(InterceptedBufferedOutputStream.class);
+            add(InterceptedFileChannel.class);
             add(OptimizedInterceptedFileOutputStream.class);
             add(OptimizedInterceptedFileInputStream.class);
             add(OptimizedInterceptedOutputStreamWriter.class);

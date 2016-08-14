@@ -96,7 +96,7 @@ public class InterceptedFileInputStream extends FileInputStream {
 
 	@Override
 	public FileChannel getChannel() {
-		return super.getChannel();
+		return new InterceptedFileChannel();
 	}
 
 	//@Override

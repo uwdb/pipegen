@@ -96,6 +96,8 @@ public class FileOutputStreamRule implements Rule {
                 !path.contains(".bin") &&
                 !path.contains(".jar") &&
                 !path.contains(".out") &&
+                !path.contains(".conf") &&
+                !path.contains("/proc") &&
                 !path.contains(".log"))
             log.info("Path: " + path);
         return  node.get("class").asText().equals(sourceClass.getName()) &&
@@ -107,7 +109,9 @@ public class FileOutputStreamRule implements Rule {
                                !path.contains(".crc") &&
                                !path.contains(".bin") &&
                                !path.contains(".jar") &&
+                               !path.contains(".conf") &&
                                !path.contains(".out") &&
+                               !path.contains("/proc") &&
                                !path.contains(".log");
     }
 

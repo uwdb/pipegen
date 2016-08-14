@@ -29,10 +29,10 @@ public class DataPipeTasks {
     }
 
     public static boolean create(Task task) throws IOException, InterruptedException, MonitorException {
-        if(!instrument(task)  ||
+        if(!instrument(task) ||
            !verifyExistingFunctionality(task) ||
            !verifyDataPipeFunctionality(task)) {
-            rollback(task.getConfiguration());
+           rollback(task.getConfiguration());
             return false;
         }
         log.info("Done");

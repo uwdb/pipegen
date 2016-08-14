@@ -65,6 +65,7 @@ public class ExpressionModificationRule extends ModificationRule {
                                !path.contains(".xml") &&
                                !path.contains(".so") &&
                                !path.contains(".jar") &&
+                               !path.contains(".conf") &&
                                !path.contains(".log");
     }
 

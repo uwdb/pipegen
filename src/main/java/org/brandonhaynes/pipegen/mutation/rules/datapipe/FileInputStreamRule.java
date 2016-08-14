@@ -98,6 +98,8 @@ public class FileInputStreamRule implements Rule {
                 !path.contains(".bin") &&
                 !path.contains(".jar") &&
                 !path.contains(".out") &&
+                !path.contains(".conf") &&
+                !path.contains("/proc") &&
                 !path.contains(".log"))
             log.info("Path: " + path);
         return node.get("class").asText().equals(sourceClass.getName()) &&
@@ -111,6 +113,8 @@ public class FileInputStreamRule implements Rule {
                !path.contains(".bin") &&
                !path.contains(".jar") &&
                !path.contains(".out") &&
+               !path.contains("/proc") &&
+               !path.contains(".conf") &&
                !path.contains(".log");
     }
 
