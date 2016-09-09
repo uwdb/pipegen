@@ -12,7 +12,7 @@ public class InterceptUtilities {
         if(!matcher.find())
             throw new IllegalArgumentException(String.format("Could not identify system name in filename %s", filename));
         else if(RuntimeConfiguration.getInstance().isInVerificationMode(direction))
-            return Paths.get(matcher.group("name")).toAbsolutePath().toString();
+            return Paths.get(matcher.group("name").replaceFirst("^file:", "")).toAbsolutePath().toString();
         else
             return matcher.group("name");
     }

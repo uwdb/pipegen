@@ -12,12 +12,13 @@ import org.brandonhaynes.pipegen.utilities.JarUtilities;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class ExpressionReplacer {
     private static final Logger log = Logger.getLogger(ExpressionReplacer.class.getName());
 
-    public static void replaceExpression(URL jarLocation, String className, String methodName, int line,
+    public static void replaceExpression(URL jarLocation, String className, String methodName, Optional<Integer> line,
                                          String targetExpression, String replacementExpression, Path backupPath)
             throws IOException, NotFoundException, CannotCompileException {
         ClassPool specificPool = new ClassPool(false);
@@ -28,7 +29,7 @@ public class ExpressionReplacer {
                           replacementExpression, backupPath);
     }
 
-    public static void replaceExpression(String className, String methodName, int line,
+    public static void replaceExpression(String className, String methodName, Optional<Integer> line,
                                          String targetExpression, String replacementExpression,
                                          ClassPool pool, Path backupPath)
             throws IOException, NotFoundException, CannotCompileException {
@@ -36,7 +37,7 @@ public class ExpressionReplacer {
     }
 
     private static void replaceExpression(CtClass targetClass, String methodName,
-                                          int line, String targetExpression, String replacementExpression,
+                                          Optional<Integer> line, String targetExpression, String replacementExpression,
                                           Path backupPath)
             throws IOException, NotFoundException, CannotCompileException {
         targetClass.defrost();
@@ -50,18 +51,19 @@ public class ExpressionReplacer {
             JarUtilities.replaceClass(targetClass.getClassPool().find(targetClass.getName()), targetClass, backupPath);
     }
 
-    private static void replaceExpression(CtConstructor[] constructors, int line,
+    private static void replaceExpression(CtConstructor[] constructors, Optional<Integer> line,
                                           String targetExpression, String replacementExpression)
             throws IOException, NotFoundException, CannotCompileException {
         for(CtConstructor constructor: constructors)
             replaceExpression(constructor, line, targetExpression, replacementExpression);
     }
 
-    private static void replaceExpression(CtBehavior behavior, int line, String targetExpression, String replacementExpression)
+    private static void replaceExpression(CtBehavior behavior, Optional<Integer> line,
+                                          String targetExpression, String replacementExpression)
             throws IOException, NotFoundException, CannotCompileException {
         behavior.instrument(new ExprEditor() {
             public void edit(NewExpr expression) throws CannotCompileException {
-                if(expression.getLineNumber() == line &&
+                if((!line.isPresent() || expression.getLineNumber() == line.get()) &&
                    expression.getClassName().matches(targetExpression)) {
                     log.info("Modifying " + behavior.getLongName());
                     expression.replace(replacementExpression);
@@ -71,9 +73,11 @@ public class ExpressionReplacer {
             public void edit(MethodCall expression) throws CannotCompileException {
                 //TODO line number matching is a horrible way to do this; disambiguate with Jimple?
                 if(!behavior.getDeclaringClass().getName().startsWith(PipeGen.class.getPackage().getName()) &&
-                        !expression.getClassName().startsWith(PipeGen.class.getPackage().getName()) &
-                        expression.getLineNumber() == line &&
-                        (expression.getClassName() + "." + expression.getMethodName()).matches(targetExpression)) {
+                        !expression.getClassName().startsWith(PipeGen.class.getPackage().getName()) &&
+                        (!line.isPresent() || expression.getLineNumber() == line.get()) &&
+                        //TODO some rules use class as targetExpression, others method.  Settle on one.
+                        ((expression.getClassName() + "." + expression.getMethodName()).matches(targetExpression) ||
+                         expression.getClassName().matches(targetExpression))) {
 
                         log.info("Modifying " + behavior.getLongName() + ":" + expression.getMethodName() +
                                                                                expression.getSignature());

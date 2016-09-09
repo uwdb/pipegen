@@ -18,7 +18,7 @@ public class ImportVerificationProxy implements VerificationProxy, Runnable {
     private static final Logger log = Logger.getLogger(ImportVerificationProxy.class.getName());
 
     private final Thread thread = new Thread(this);
-    private final WorkerDirectoryClient client = new WorkerDirectoryClient("*", 10, 60);
+    private final WorkerDirectoryClient client = new WorkerDirectoryClient("*");
     private final Path basePath;
     private volatile boolean isRunning = true;
 

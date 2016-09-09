@@ -7,6 +7,8 @@ import javassist.NotFoundException;
 import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.*;
+import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.InterceptedFSDataInputStream;
+import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.InterceptedTextInputFormat;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedResultSet;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedString;
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedStringBuffer;
@@ -66,6 +68,10 @@ public class ClassUtilities {
             add(InterceptedBufferedReader.class);
             add(InterceptedBufferedOutputStream.class);
             add(InterceptedFileChannel.class);
+
+            add(InterceptedTextInputFormat.class);
+            add(InterceptedFSDataInputStream.class);
+
             add(OptimizedInterceptedFileOutputStream.class);
             add(OptimizedInterceptedFileInputStream.class);
             add(OptimizedInterceptedOutputStreamWriter.class);
@@ -73,6 +79,7 @@ public class ClassUtilities {
             add(OptimizedInterceptedInputStreamReader.class);
             add(OptimizedInterceptedBufferedReader.class);
             add(OptimizedInterceptedBufferedOutputStream.class);
+
             add(InterceptUtilities.class);
             add(InterceptMetadata.class);
             add(RuntimeConfiguration.class);

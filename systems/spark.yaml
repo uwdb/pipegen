@@ -4,9 +4,12 @@ path: /home/bhaynes/research/spark/
 backupPath: /tmp/backup
 instrumentation:
   classPaths:
-    - assembly/target/scala-2.11/*
+    - assembly/target/scala-2.11/spark-assembly-2.0.0-SNAPSHOT-hadoop2.6.0.jar
     # Must come after the main Spark jar
     - jars/org/apache/hadoop/hadoop-common/2.6.0/hadoop-common-2.6.0.jar
+    - jars/org/apache/hadoop/hadoop-client/2.6.0/hadoop-client-2.6.0.jar
+    - jars/commons-logging/commons-logging/1.2/commons-logging-1.2.jar
+    - jars/commons-lang/commons-lang/2.6/commons-lang-2.6.jar
   port: 7780
   timeout: 2400
   trace: $DIR/templates/ImportTracer.java
@@ -17,8 +20,10 @@ instrumentation:
   debug: false
 optimization:
   classPaths:
-    - assembly/target/scala-2.11/*
-    - recurse:jars/*
+    - assembly/target/scala-2.11/spark-assembly-2.0.0-SNAPSHOT-hadoop2.6.0.jar
+    - jars/org/apache/hadoop/hadoop-common/2.6.0/hadoop-common-2.6.0.jar
+    - jars/org/apache/hadoop/hadoop-mapreduce-client-core/2.6.0/hadoop-mapreduce-client-core-2.6.0.jar
+    #- recurse:jars/*
 datapipe:
   import: build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl sql/core -am -q test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars -Dmaven.compile.fork=true -Dmaven.junit.fork=true -Denforcer.skip=true --offline
   export: build/mvn -Pyarn -Phadoop-2.6 -Dhadoop.version=2.6.0 -pl sql/core -am -q test -DwildcardSuites=org.apache.spark.FileSuite -Dtest=none -Dmaven.repo.local=/home/bhaynes/research/spark/jars -Dmaven.compile.fork=true -Dmaven.junit.fork=true -Denforcer.skip=true --offline

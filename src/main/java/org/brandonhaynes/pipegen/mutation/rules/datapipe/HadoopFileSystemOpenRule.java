@@ -14,6 +14,7 @@ import org.brandonhaynes.pipegen.instrumentation.TraceResult;
 import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemImport;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
+import org.brandonhaynes.pipegen.utilities.ClassUtilities;
 import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.IOException;
@@ -68,11 +69,11 @@ public class HadoopFileSystemOpenRule implements Rule {
             JarUtilities.replaceClasses(
                     url,
                     task.getConfiguration().instrumentationConfiguration.getClassPool(),
-                    InterceptedFileSystemImport.getDependencies(),
+                    ClassUtilities.getPipeGenDependencies(),
                     task.getConfiguration().getVersion(),
                     task.getConfiguration().getBackupPath());
             ExpressionReplacer.replaceExpression(
-                    frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
+                    frame.getClassName(), frame.getMethodName(), frame.getLine(),
                     targetExpression, template, task.getConfiguration().instrumentationConfiguration.getClassPool(),
                     task.getConfiguration().getBackupPath());
         }

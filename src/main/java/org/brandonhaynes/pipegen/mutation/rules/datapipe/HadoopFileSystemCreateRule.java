@@ -76,7 +76,7 @@ public class HadoopFileSystemCreateRule implements Rule {
                     task.getConfiguration().getBackupPath());
 
             ExpressionReplacer.replaceExpression(
-                    url, frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
+                    url, frame.getClassName(), frame.getMethodName(), frame.getLine(),
                     targetExpression, template, task.getConfiguration().getBackupPath());
         }
 

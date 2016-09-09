@@ -4,32 +4,31 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.brandonhaynes.pipegen.configuration.tasks.ImportTask;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
-import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileInputStream;
+import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.InterceptedTextInputFormat;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Logger;
 
 import static org.brandonhaynes.pipegen.utilities.ClassUtilities.getPipeGenDependencies;
 
-public class FileInputStreamRule implements Rule {
+public class TextImportFormatReflectedRule implements Rule {
     private static final Logger log = Logger.getLogger(FileInputStreamRule.class.getName());
 
-    private static final Class sourceClass = FileInputStream.class;
-    private static final Class targetClass = InterceptedFileInputStream.class;
-    private static final String template = String.format("$_ = %s.intercept($$);", targetClass.getName());
+    private static final Class sourceClass = TextInputFormat.class;
+    private static final Class targetClass = InterceptedTextInputFormat.class;
+    private static final String template = String.format("$_ = %s.intercept($0, $$);", targetClass.getName());
 
     private final ImportTask task;
 
-
-    public FileInputStreamRule(ImportTask task) {
+    public TextImportFormatReflectedRule(ImportTask task) {
         this.task = task;
     }
 
@@ -48,12 +47,11 @@ public class FileInputStreamRule implements Rule {
     }
 
     public boolean apply(JsonNode node) throws IOException, NotFoundException, CannotCompileException {
-        // Modify the first stack frame that instantiates FileInputStream
         for(JsonNode stackFrame: node.get("stack")) {
             StackFrame frame = new StackFrame(stackFrame.asText());
             if(isRelevantStackFrame(frame))
                 return isAlreadyModified(frame) ||
-                       modifyCallSite(node, frame);
+                        modifyCallSite(node, frame);
         }
 
         return false;
@@ -68,17 +66,17 @@ public class FileInputStreamRule implements Rule {
                 targetExpression, template, task.getConfiguration().instrumentationConfiguration.getClassPool(),
                 task.getConfiguration().getBackupPath());
         JarUtilities.replaceClasses(task.getConfiguration().instrumentationConfiguration.getClassPool().find(frame.getClassName()),
-                                  task.getConfiguration().instrumentationConfiguration.getClassPool(),
-                                  getPipeGenDependencies(),
-                                  task.getConfiguration().getVersion(),
-                                  task.getConfiguration().getBackupPath());
+                task.getConfiguration().instrumentationConfiguration.getClassPool(),
+                getPipeGenDependencies(),
+                task.getConfiguration().getVersion(),
+                task.getConfiguration().getBackupPath());
         task.getModifiedCallSites().add(frame);
         log.info(String.format("Injected data pipe at %s", frame.getStackFrame()));
         return true;
     }
 
     private boolean isRelevantStackFrame(StackFrame frame) {
-        return !frame.getClassName().equals(sourceClass.getName());
+        return !frame.getClassName().startsWith("java.lang.reflect");
     }
 
     private boolean isAlreadyModified(StackFrame frame) {
@@ -86,43 +84,9 @@ public class FileInputStreamRule implements Rule {
     }
 
     private boolean isRelevantCallSite(JsonNode node) {
-        String path = getPath(node);
-        //TODO
-        if(path != null && !path.equals("null") && node.get("class").asText().equals(sourceClass.getName()) &&
-                !path.contains(".class") &&
-                !path.contains(".properties") &&
-                !path.contains(".java") &&
-                !path.contains(".xml") &&
-                !path.contains(".so") &&
-                !path.contains(".crc") &&
-                !path.contains(".bin") &&
-                !path.contains(".jar") &&
-                !path.contains(".out") &&
-                !path.contains(".conf") &&
-                !path.contains("/proc") &&
-                !path.contains(".log"))
-            log.info("Path: " + path);
-        return node.get("class").asText().equals(sourceClass.getName()) &&
-               path != null &&
-               !path.contains(".class") &&
-               !path.contains(".properties") &&
-               !path.contains(".java") &&
-               !path.contains(".xml") &&
-               !path.contains(".so") &&
-               !path.contains(".crc") &&
-               !path.contains(".bin") &&
-               !path.contains(".jar") &&
-               !path.contains(".out") &&
-               !path.contains("/proc") &&
-               !path.contains(".conf") &&
-               !path.contains(".log");
-    }
-
-    private String getPath(JsonNode node) {
-        String path = node.get("state").get("path") != null ? node.get("state").get("path").asText() : null;
-        return path != null && !path.isEmpty() && !path.equals("null")
-                ? path
-                : null;
+        JsonNode state = node.get("state");
+        JsonNode clazz = state != null ? state.get("clazz") : null;
+        return clazz != null && clazz.textValue().contains(sourceClass.getName());
     }
 
     private Collection<JsonNode> getNodes(TraceResult trace) {

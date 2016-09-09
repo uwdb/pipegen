@@ -32,8 +32,7 @@ public class DataPipeTasks {
         if(!instrument(task) ||
            !verifyExistingFunctionality(task) ||
            !verifyDataPipeFunctionality(task)) {
-           rollback(task.getConfiguration());
-            return false;
+            rollback(task.getConfiguration());
         }
         log.info("Done");
         return true;
@@ -45,6 +44,7 @@ public class DataPipeTasks {
         OptimizationTask task;
 
         log.info("Beginning optimization instrumentation");
+        Thread.sleep(20000);
 
         log.info("Pushing writers up call graph");
         do {

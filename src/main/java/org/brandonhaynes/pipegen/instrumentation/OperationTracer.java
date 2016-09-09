@@ -42,14 +42,14 @@ public class OperationTracer {
 
 		StringWriter output = new StringWriter();
 		String classPath = Joiner.on(':').join(classPaths);
-        Client client = new Client(clientPort, ".", debug, false, true, false, null, null);
+		Client client = new Client(clientPort, null, null, debug, false, true, false, null, null);
 		byte[] bytecode = client.compile(traceFile.toString(), classPath, new PrintWriter(output));
 
 		if(bytecode == null)
 			throw new IOException(String.format("No bytecode produced during compilation for %s: %s",
 					traceFile, output));
 		else {
-			client.attach(Integer.toString(processId), agentFile.toString(), classPath, null);
+			client.attach(Integer.toString(processId), agentFile.toString(), classPath, null); // "/home/bhaynes/research/spark/assembly/target/scala-2.11/spark-assembly-2.0.0-SNAPSHOT-hadoop2.6.0.jar:/home/bhaynes/research/spark/jars/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/home/bhaynes/research/spark/jars/commons-lang/commons-lang/2.6/commons-lang-2.6.jar:/home/bhaynes/research/spark/jars/org/apache/hadoop/hadoop-common/2.6.0/hadoop-common-2.6.0.jar");
 			return executeClient(client, bytecode, timeout);
 		}
 	}
@@ -58,6 +58,7 @@ public class OperationTracer {
 			throws IOException {
 		ExecutorService executor = Executors.newFixedThreadPool(1);
 		final File instrumentationFile = File.createTempFile("instrumentation", null);
+		log.info("Writing intermediate instrumentation results to " + instrumentationFile);
 
 		try {
 			try(FileWriter writer = new FileWriter(instrumentationFile)) {

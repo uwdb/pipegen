@@ -15,8 +15,8 @@ import java.util.Map;
 public class WorkerDirectoryClient {
     static final String IMPORT_PATH = "/import";
     static final String EXPORT_PATH = "/export";
-    private static final int DEFAULT_CONNECT_TIMEOUT = 10;
-    private static final int DEFAULT_READ_TIMEOUT = 1200;
+    private static final int DEFAULT_CONNECT_TIMEOUT = 30;
+    private static final int DEFAULT_READ_TIMEOUT = 360;
 
     private final String systemName;
     private final int connectTimeout;

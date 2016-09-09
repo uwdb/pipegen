@@ -74,7 +74,7 @@ public class OptimizedInterceptedFileInputStream extends InterceptedFileInputStr
         return copied;
 	}
 
-	AugmentedString readLine() throws IOException {
+	public AugmentedString readLine() throws IOException {
         if(isEOF())
             return null;
         else if(!pendingBuffer.hasRemaining())

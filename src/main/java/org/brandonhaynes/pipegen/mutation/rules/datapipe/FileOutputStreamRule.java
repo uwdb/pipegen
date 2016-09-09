@@ -62,7 +62,7 @@ public class FileOutputStreamRule implements Rule {
 
     private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
         ExpressionReplacer.replaceExpression(
-                frame.getClassName(), frame.getMethodName(), frame.getLine().get(),
+                frame.getClassName(), frame.getMethodName(), frame.getLine(),
                 targetExpression, template, task.getConfiguration().instrumentationConfiguration.getClassPool(),
                 task.getConfiguration().getBackupPath());
         JarUtilities.replaceClasses(task.getConfiguration().instrumentationConfiguration.getClassPool().find(frame.getClassName()),

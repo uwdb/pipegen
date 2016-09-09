@@ -1,9 +1,9 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import com.sun.btrace.AnyType;
-import com.sun.btrace.annotations.*;
 import org.apache.hadoop.fs.Path;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -221,11 +221,65 @@ public class ImportTracer {
         println(buffer.toString());
     }
 
-    /*
-    @OnMethod(clazz="org.apache.hadoop.fs.FileSystem",
+    @OnMethod(clazz="java.lang.reflect.Constructor",
+            method="newInstance")
+    public static void OnReflectedConstructorInstantiate(@Self Object self, AnyType[] args) {
+        if(((Constructor)self).getDeclaringClass().getName().equals("org.apache.hadoop.mapred.TextInputFormat")) {
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.append("Entry:").append(LINE_SEPARATOR);
+            buffer.append("org.apache.hadoop.util.ReflectionUtils").append(LINE_SEPARATOR);
+            buffer.append(probeLine()).append(LINE_SEPARATOR);
+            printArray(buffer, args);
+            printFields(buffer, self);
+            jstack(buffer);
+
+            println(buffer.toString());
+        }
+    }
+
+/*    @OnMethod(clazz="org.apache.hadoop.util.ReflectionUtils",
+            method="newInstance")
+    public static void OnFileInputStreamInstantationByReflection(AnyType[] args) {
+        if(args.length > 0 &&
+           (Object)args[0] instanceof Class &&
+           ((Class)(Object)args[0]).getName().equals("org.apache.hadoop.mapred.TextInputFormat")) {
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.append("Entry:").append(LINE_SEPARATOR);
+            buffer.append("org.apache.hadoop.util.ReflectionUtils").append(LINE_SEPARATOR);
+            buffer.append(probeLine()).append(LINE_SEPARATOR);
+            printArray(buffer, args);
+            buffer.append('{').append('}').append(LINE_SEPARATOR);
+            jstack(buffer);
+
+            println(buffer.toString());
+        }
+    }
+*/
+
+//    @OnMethod(clazz="+org.apache.hadoop.mapred.LineRecordReader",
+//              method="<init>")
+//            //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
+//    public static void OnLineReader(@Self Object self, AnyType[] args) {
+//        StringBuilder buffer = new StringBuilder();
+//
+//        buffer.append("Entry:").append(LINE_SEPARATOR);
+//        buffer.append(classOf(self)).append(LINE_SEPARATOR);
+//        buffer.append(probeLine()).append(LINE_SEPARATOR);
+//        printArray(buffer, args);
+//        printFields(buffer, self);
+//        jstack(buffer);
+//
+//        println(buffer.toString());
+//        //throw new RuntimeException("foo");
+//    }
+
+    //@OnMethod(clazz="org.apache.hadoop.fs.ChecksumFileSystem",
+    @OnMethod(clazz="+org.apache.hadoop.fs.FileSystem",
     //@OnMethod(clazz="org.apache.hadoop.hdfs.DistributedFileSystem",
     //@OnMethod(clazz="org.apache.hadoop.fs.RawLocalFileSystem",
-    //@OnMethod(clazz="org.apache.hadoop.fs.LocalFileSystem",
+    //@OnMethod(clazz="+org.apache.hadoop.fs.LocalFileSystem",
             method="open")
     public static void OnHadoopFileSystemOpen(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
@@ -239,9 +293,10 @@ public class ImportTracer {
         jstack(buffer);
 
         println(buffer.toString());
+        //throw new RuntimeException("foo");
     }
-*/
 
+    /*
     @OnMethod(clazz="org.apache.hadoop.fs.FileSystem",
             method="create")
     public static void OnHadoopFileSystemCreate(@Self Object self, AnyType[] args) {
@@ -255,7 +310,7 @@ public class ImportTracer {
         jstack(buffer);
 
         println(buffer.toString());
-    }
+    }*/
 
     //region Adapted from BTraceUtils / BTraceRuntime
 
