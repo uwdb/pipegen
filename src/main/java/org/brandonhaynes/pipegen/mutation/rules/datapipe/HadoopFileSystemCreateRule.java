@@ -11,7 +11,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.brandonhaynes.pipegen.configuration.tasks.ExportTask;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
-import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemExport;
+import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.InterceptedFSDataOutputStream;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
 import org.brandonhaynes.pipegen.utilities.JarUtilities;
@@ -29,7 +29,7 @@ public class HadoopFileSystemCreateRule implements Rule {
     private static final Collection<String> sourceClasses = Lists.newArrayList(
             FileSystem.class.getName(), LocalFileSystem.class.getName(),
             DistributedFileSystem.class.getName(), RawLocalFileSystem.class.getName());
-    private static final Class targetClass = InterceptedFileSystemExport.class;
+    private static final Class targetClass = InterceptedFSDataOutputStream.class;
     private static final String template = String.format("$_ = %s.intercept($0, $$);", targetClass.getName());
     private static final String targetExpression = "create";
 

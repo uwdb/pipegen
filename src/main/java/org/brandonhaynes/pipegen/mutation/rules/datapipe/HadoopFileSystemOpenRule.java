@@ -5,32 +5,27 @@ import com.google.common.collect.Lists;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.fs.RawLocalFileSystem;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.brandonhaynes.pipegen.configuration.tasks.ImportTask;
 import org.brandonhaynes.pipegen.instrumentation.StackFrame;
 import org.brandonhaynes.pipegen.instrumentation.TraceResult;
-import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.hadoop_0_2_0.InterceptedFileSystemImport;
+import org.brandonhaynes.pipegen.instrumentation.injected.hadoop.InterceptedFSDataInputStream;
 import org.brandonhaynes.pipegen.mutation.ExpressionReplacer;
 import org.brandonhaynes.pipegen.mutation.rules.Rule;
-import org.brandonhaynes.pipegen.utilities.ClassUtilities;
 import org.brandonhaynes.pipegen.utilities.JarUtilities;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-public class HadoopFileSystemOpenRule implements Rule {
-    private static final Logger log = Logger.getLogger(HadoopFileSystemOpenRule.class.getName());
+import static org.brandonhaynes.pipegen.utilities.ClassUtilities.getPipeGenDependencies;
 
-    private static final Collection<String> sourceClasses = Lists.newArrayList(
-            FileSystem.class.getName(), LocalFileSystem.class.getName(),
-            DistributedFileSystem.class.getName(), RawLocalFileSystem.class.getName());
-    private static final Class targetClass = InterceptedFileSystemImport.class;
+public class HadoopFileSystemOpenRule implements Rule {
+    private static final Logger log = Logger.getLogger(FileInputStreamRule.class.getName());
+
+    private static final Class sourceClass = FileSystem.class;
+    private static final Class targetClass = InterceptedFSDataInputStream.class;
+    private static final String targetMethodName = "open";
     private static final String template = String.format("$_ = %s.intercept($0, $$);", targetClass.getName());
-    private static final String targetExpression = "open";
 
     private final ImportTask task;
 
@@ -53,39 +48,37 @@ public class HadoopFileSystemOpenRule implements Rule {
     }
 
     public boolean apply(JsonNode node) throws IOException, NotFoundException, CannotCompileException {
-        // Modify the first stack frame that instantiates FileInputStream
         for(JsonNode stackFrame: node.get("stack")) {
             StackFrame frame = new StackFrame(stackFrame.asText());
             if(isRelevantStackFrame(frame))
                 return isAlreadyModified(frame) ||
-                        modifyCallSite(frame);
+                        modifyCallSite(node, frame);
         }
 
         return false;
     }
 
-    private boolean modifyCallSite(StackFrame frame) throws IOException, NotFoundException, CannotCompileException {
-        for(URL url: task.getConfiguration().instrumentationConfiguration.findClasses(frame.getClassName())) {
-            JarUtilities.replaceClasses(
-                    url,
-                    task.getConfiguration().instrumentationConfiguration.getClassPool(),
-                    ClassUtilities.getPipeGenDependencies(),
-                    task.getConfiguration().getVersion(),
-                    task.getConfiguration().getBackupPath());
-            ExpressionReplacer.replaceExpression(
-                    frame.getClassName(), frame.getMethodName(), frame.getLine(),
-                    targetExpression, template, task.getConfiguration().instrumentationConfiguration.getClassPool(),
-                    task.getConfiguration().getBackupPath());
-        }
-
+    //TODO should be idempotent and refuse to modify any call sites inside InterceptedFileInputStream.intercept(...)
+    private boolean modifyCallSite(JsonNode node, StackFrame frame)
+            throws IOException, NotFoundException, CannotCompileException {
+        String targetExpression = new StackFrame(node.get("stack").get(0).asText()).getClassName() + "." + targetMethodName;
+        ExpressionReplacer.replaceExpression(
+                frame.getClassName(), frame.getMethodName(), frame.getLine(),
+                targetExpression, template, task.getConfiguration().instrumentationConfiguration.getClassPool(),
+                task.getConfiguration().getBackupPath());
+        JarUtilities.replaceClasses(task.getConfiguration().instrumentationConfiguration.getClassPool().find(frame.getClassName()),
+                task.getConfiguration().instrumentationConfiguration.getClassPool(),
+                getPipeGenDependencies(),
+                task.getConfiguration().getVersion(),
+                task.getConfiguration().getBackupPath());
         task.getModifiedCallSites().add(frame);
-        log.info(String.format("Injected data pipe at %s (%s)", frame.getStackFrame(),
-                task.getConfiguration().instrumentationConfiguration.getClassPool().find(frame.getClassName())));
+        log.info(String.format("Injected data pipe at %s", frame.getStackFrame()));
         return true;
     }
 
     private boolean isRelevantStackFrame(StackFrame frame) {
-        return !sourceClasses.contains(frame.getClassName());
+        return !frame.getClassName().startsWith(sourceClass.getPackage().getName()) ||
+               !frame.getClassName().contains(sourceClass.getName());
     }
 
     private boolean isAlreadyModified(StackFrame frame) {
@@ -93,18 +86,8 @@ public class HadoopFileSystemOpenRule implements Rule {
     }
 
     private boolean isRelevantCallSite(JsonNode node) {
-        String uri = getUri(node);
-        //TODO
-        return sourceClasses.contains(node.get("class").asText()) &&
-                uri != null && !uri.contains(".class") && !uri.contains(".properties");
-    }
-
-    private String getUri(JsonNode node) {
-        JsonNode uriNode = node.get("state").get("uri");
-        String uri = uriNode != null ? node.get("state").get("uri").asText() : null;
-        return uri != null && !uri.isEmpty() && !uri.equals("null")
-                ? uri
-                : null;
+        return node.get("class").textValue().contains(sourceClass.getSimpleName()) &&
+               node.get("class").textValue().contains(sourceClass.getPackage().getName());
     }
 
     private Collection<JsonNode> getNodes(TraceResult trace) {

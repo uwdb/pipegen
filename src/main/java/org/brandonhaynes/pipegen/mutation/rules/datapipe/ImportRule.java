@@ -7,9 +7,8 @@ import org.brandonhaynes.pipegen.mutation.rules.SaveTraceRule;
 public class ImportRule extends CompositeRule {
     public ImportRule(ImportTask task) {
         super(new SaveTraceRule(task.getConfiguration()),
-              //new HadoopFileSystemOpenRule(task),
               new FileInputStreamRule(task),
               new TextImportFormatReflectedRule(task),
-              new FileSystemOpenRule(task));
+              new HadoopFileSystemOpenRule(task));
     }
 }
