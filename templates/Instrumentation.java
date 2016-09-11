@@ -14,9 +14,7 @@ import static com.sun.btrace.BTraceUtils.*;
 @BTrace(unsafe=true)
 public class ImportTracer {
     @OnMethod(clazz="+java.lang.Readable",
-            //@OnMethod(clazz="+org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter",
             method="read")
-//              location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnInterceptedReaderRead(@Self Object self, AnyType[] args) {
         if(self.getClass().getName().equals("org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedReader")) {
             StringBuilder buffer = new StringBuilder();
@@ -33,9 +31,7 @@ public class ImportTracer {
     }
 
     @OnMethod(clazz="+java.lang.Appendable",
-            //@OnMethod(clazz="+org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter",
             method="append")
-//              location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnInterceptedWriterAppend(@Self Object self, AnyType[] args) {
         if(self.getClass().getName().equals("org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedBufferedWriter")) {
             StringBuilder buffer = new StringBuilder();
@@ -70,10 +66,7 @@ public class ImportTracer {
 
     @OnMethod(clazz="+java.io.FileOutputStream",
             method="write")
-    //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
-    public static void OnInterceptedFileOutputStreamWrite(@Self Object self, //@TargetMethodOrField String method,
-                                                          //@ProbeMethodName String probeMethod,
-                                                          AnyType[] args) {
+    public static void OnInterceptedFileOutputStreamWrite(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 
         buffer.append("Entry:").append(LINE_SEPARATOR);
@@ -86,10 +79,6 @@ public class ImportTracer {
         println(buffer.toString());
     }
 
-    //    @OnMethod(clazz="/.*/", method="toString")
-//    public static void OnToString(@Self Object self, AnyType[] args) {
-//        print("Entry:\n" + classOf(self) + "\n" + "\n" + "[]\n" + "{}\n" + jstackStr());
-//    }
     @OnMethod(clazz="org.brandonhaynes.pipegen.instrumentation.injected.filesystem.InterceptedFileInputStream",
             method="<init>",
             location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
@@ -158,7 +147,6 @@ public class ImportTracer {
 
     @OnMethod(clazz="+java.io.BufferedReader",
             method="<init>")
-    //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
     public static void OnBufferedReader(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 
@@ -174,10 +162,7 @@ public class ImportTracer {
 
     @OnMethod(clazz="+java.io.FileOutputStream",
             method="<init>") //,
-    //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
-    public static void OnFileOutputStream(@Self Object self, //@TargetMethodOrField String method),
-                                          //@ProbeMethodName String probeMethod,
-                                          AnyType[] args) {
+    public static void OnFileOutputStream(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 
         buffer.append("Entry:").append(LINE_SEPARATOR);
@@ -239,49 +224,8 @@ public class ImportTracer {
         }
     }
 
-/*    @OnMethod(clazz="org.apache.hadoop.util.ReflectionUtils",
-            method="newInstance")
-    public static void OnFileInputStreamInstantationByReflection(AnyType[] args) {
-        if(args.length > 0 &&
-           (Object)args[0] instanceof Class &&
-           ((Class)(Object)args[0]).getName().equals("org.apache.hadoop.mapred.TextInputFormat")) {
-            StringBuilder buffer = new StringBuilder();
-
-            buffer.append("Entry:").append(LINE_SEPARATOR);
-            buffer.append("org.apache.hadoop.util.ReflectionUtils").append(LINE_SEPARATOR);
-            buffer.append(probeLine()).append(LINE_SEPARATOR);
-            printArray(buffer, args);
-            buffer.append('{').append('}').append(LINE_SEPARATOR);
-            jstack(buffer);
-
-            println(buffer.toString());
-        }
-    }
-*/
-
-//    @OnMethod(clazz="+org.apache.hadoop.mapred.LineRecordReader",
-//              method="<init>")
-//            //location=@Location(value=Kind.CALL, clazz="/.*/", method="/.*/"))
-//    public static void OnLineReader(@Self Object self, AnyType[] args) {
-//        StringBuilder buffer = new StringBuilder();
-//
-//        buffer.append("Entry:").append(LINE_SEPARATOR);
-//        buffer.append(classOf(self)).append(LINE_SEPARATOR);
-//        buffer.append(probeLine()).append(LINE_SEPARATOR);
-//        printArray(buffer, args);
-//        printFields(buffer, self);
-//        jstack(buffer);
-//
-//        println(buffer.toString());
-//        //throw new RuntimeException("foo");
-//    }
-
-    //@OnMethod(clazz="org.apache.hadoop.fs.ChecksumFileSystem",
     @OnMethod(clazz="+org.apache.hadoop.fs.FileSystem",
-    //@OnMethod(clazz="org.apache.hadoop.hdfs.DistributedFileSystem",
-    //@OnMethod(clazz="org.apache.hadoop.fs.RawLocalFileSystem",
-    //@OnMethod(clazz="+org.apache.hadoop.fs.LocalFileSystem",
-            method="open")
+              method="open")
     public static void OnHadoopFileSystemOpen(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 
@@ -289,34 +233,13 @@ public class ImportTracer {
         buffer.append(classOf(self)).append(LINE_SEPARATOR);
         buffer.append(probeLine()).append(LINE_SEPARATOR);
         printArray(buffer, args);
-        //printFields(buffer, self);
         printFields(buffer, args[0] instanceof Path ? args[0] : self);
         jstack(buffer);
 
         println(buffer.toString());
-        //throw new RuntimeException("foo");
     }
 
-    /*
-    @OnMethod(clazz="org.apache.hadoop.fs.FileSystem",
-            method="create")
-    public static void OnHadoopFileSystemCreate(@Self Object self, AnyType[] args) {
-        StringBuilder buffer = new StringBuilder();
-
-        buffer.append("Entry:").append(LINE_SEPARATOR);
-        buffer.append(classOf(self)).append(LINE_SEPARATOR);
-        buffer.append(probeLine()).append(LINE_SEPARATOR);
-        printArray(buffer, args);
-        printFields(buffer, args[0] instanceof Path ? args[0] : self);
-        jstack(buffer);
-
-        println(buffer.toString());
-    }*/
-
-    //region Adapted from BTraceUtils / BTraceRuntime
-
     public static void printArray(StringBuilder buf, Object[] array) {
-        //StringBuilder buf = new StringBuilder(prefix);
         buf.append('[');
         for (Object obj : array) {
             buf.append(Strings.str(obj));

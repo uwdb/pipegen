@@ -7,7 +7,7 @@ instrumentation:
     - target/
   port: 7780
   timeout: 60
-  trace: $DIR/templates/ImportTracer.java
+  trace: $DIR/templates/Instrumentation.java
   agent: $DIR/lib/btrace-agent.jar
   logs: /tmp
   commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*

@@ -7,7 +7,7 @@ instrumentation:
     - jars/sane/*
   port: 7781
   timeout: 300
-  trace: $DIR/templates/ImportTracer.java
+  trace: $DIR/templates/Instrumentation.java
   agent: $DIR/lib/btrace-agent.jar
   logPath: /tmp
   commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*

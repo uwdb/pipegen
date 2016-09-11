@@ -12,7 +12,7 @@ instrumentation:
     - jars/commons-lang/commons-lang/2.6/commons-lang-2.6.jar
   port: 7780
   timeout: 2400
-  trace: $DIR/templates/ImportTracer.java
+  trace: $DIR/templates/Instrumentation.java
   agent: $DIR/lib/btrace-agent.jar
   logPath: /tmp
   commands: .*spark/core.*org.apache.spark.FileSuite.*
