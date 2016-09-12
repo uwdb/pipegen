@@ -10,6 +10,7 @@ import java.lang.reflect.Modifier;
 
 import static com.sun.btrace.BTraceUtils.*;
 
+//TODO clean this up
 @BTrace(unsafe=true)
 public class ImportTracer {
     @OnMethod(clazz="+java.lang.Readable",
