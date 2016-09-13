@@ -8,6 +8,14 @@
     <artifactId>pipegen</artifactId>
     <version>0.1</version>
 
+    <repositories>
+        <repository>
+            <id>local</id>
+            <name>local</name>
+            <url>file:${project.basedir}/repo</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
@@ -79,36 +87,26 @@
             <groupId>org.apache.arrow</groupId>
             <artifactId>apache-arrow-memory</artifactId>
             <version>0.1</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/apache-arrow-memory-0.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.apache.arrow</groupId>
             <artifactId>apache-arrow-vector</artifactId>
             <version>0.1</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/apache-arrow-vector-0.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.soot</groupId>
             <artifactId>soot</artifactId>
-            <scope>system</scope>
             <version>trunk-post-2.5</version>
-            <systemPath>${basedir}/lib/soot-trunk.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.sun.tools.btrace</groupId>
             <artifactId>btrace-client</artifactId>
             <version>1.3.8</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/btrace-client-1.3.8.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.sun.tools.btrace</groupId>
             <artifactId>btrace-boot</artifactId>
             <version>1.3.8</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/btrace-boot-1.3.8.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
