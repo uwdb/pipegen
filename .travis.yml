@@ -4,6 +4,10 @@ sudo: true
 env:
   - MAVEN_REPOSITORY=$HOME/.m2/repository
 before_install:
+  - pushd .
+  - cd /
+  - find -name jdk_switcher
+  - popd
   - sudo jdk_switcher use oraclejdk8
   - sudo java -Xmx32m -version
   - env
