@@ -4,11 +4,11 @@ sudo: true
 env:
   - MAVEN_REPOSITORY=$HOME/.m2/repository
 before_install:
+  - sudo jdk_switcher use oraclejdk8
+  - sudo java -Xmx32m -version
   - env
   - mkdir ./before_install
   - mvn dependency:resolve
-  - sudo jdk_switcher use oraclejdk8
-  - sudo java -Xmx32m -version
   - 'sudo javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
            -d ./before_install
            $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/utilities/JvmUtilities.java
