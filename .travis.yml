@@ -7,10 +7,10 @@ before_install:
   - mvn dependency:resolve
   - 'javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
            -d $TMPDIR
-           ${user.home}/src/main/java/org/brandonhaynes/pipegen/utilities/JvmUtilities.java
-           ${user.home}/src/main/java/org/brandonhaynes/pipegen/mutation/ClassModifierReplacer.java
-           ${user.home}/src/main/java/org/brandonhaynes/pipegen/utilities/JarUtilities.java
-           ${user.home}/src/main/java/org/brandonhaynes/pipegen/configuration/Version.java
-           ${user.home}/src/main/java/org/brandonhaynes/pipegen/utilities/JarClassPath.java'
+           $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/utilities/JvmUtilities.java
+           $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/mutation/ClassModifierReplacer.java
+           $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/utilities/JarUtilities.java
+           $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/configuration/Version.java
+           $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/utilities/JarClassPath.java'
   - 'java -classpath "$TMPDIR:$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
           org.brandonhaynes.pipegen.utilities.JvmUtilities RemoveFinalFlagFromString java.lang.String,java.lang.StringBuilder,java.lang.StringBuffer'
