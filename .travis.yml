@@ -23,3 +23,5 @@ before_install:
   - find -name *.class
   - 'sudo $JAVA_HOME/bin/java -classpath "./before_install:$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
           org.brandonhaynes.pipegen.utilities.JvmUtilities RemoveFinalFlagFromString java.lang.String,java.lang.StringBuilder,java.lang.StringBuffer'
+  - 'sudo $JAVA_HOME/jre/bin/java -classpath "./before_install:$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
+          org.brandonhaynes.pipegen.utilities.JvmUtilities RemoveFinalFlagFromString java.lang.String,java.lang.StringBuilder,java.lang.StringBuffer'
