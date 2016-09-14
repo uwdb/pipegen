@@ -5,7 +5,9 @@ env:
   - MAVEN_REPOSITORY=${user.home}/.m2/repository
 before_install:
   - mvn dependency:resolve
-  - ls -ar ${user.home}
+  - ls -ar .
+  - echo ***
+  - ls -ar $TRAVIS_BUILD_DIR
   - 'javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
            $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/utilities/JvmUtilities.java
            $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/mutation/ClassModifierReplacer.java
