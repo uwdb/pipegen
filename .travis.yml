@@ -1,4 +1,16 @@
 language: java
 jdk:
-- oraclejdk8
-
+  - oraclejdk8
+env:
+  - MAVEN_REPOSITORY=${user.home}/.m2/repository
+before_install:
+  - mvn dependency:resolve
+  - 'javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
+           -d $TMPDIR
+           src/main/java/org/brandonhaynes/pipegen/utilities/JvmUtilities.java
+           src/main/java/org/brandonhaynes/pipegen/mutation/ClassModifierReplacer.java
+           src/main/java/org/brandonhaynes/pipegen/utilities/JarUtilities.java
+           src/main/java/org/brandonhaynes/pipegen/configuration/Version.java
+           src/main/java/org/brandonhaynes/pipegen/utilities/JarClassPath.java'
+  - 'java -classpath "$TMPDIR:$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
+          org.brandonhaynes.pipegen.utilities.JvmUtilities RemoveFinalFlagFromString java.lang.String,java.lang.StringBuilder,java.lang.StringBuffer'
