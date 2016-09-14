@@ -8,8 +8,8 @@ before_install:
   - cd /
   - sudo find -name jdk_switcher
   - popd
-  - sudo jdk_switcher use oraclejdk8
-  - sudo java -Xmx32m -version
+  #- sudo jdk_switcher use oraclejdk8
+  #- sudo java -Xmx32m -version
   - env
   - mkdir ./before_install
   - mvn dependency:resolve
