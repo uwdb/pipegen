@@ -15,11 +15,9 @@ import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedStringBu
 import org.brandonhaynes.pipegen.instrumentation.injected.java.AugmentedStringBuilder;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptUtilities;
-import org.brandonhaynes.pipegen.mutation.ClassModifierReplacer;
 import org.brandonhaynes.pipegen.mutation.SuperClassReplacer;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
-import soot.Modifier;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -34,22 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ClassUtilities {
-    public static void main(String[] args) throws IOException {
-        if(args.length != 2)
-            System.out.println("Usage: ClassUtilities RemoveFinalFlagFromString class-name");
-        else
-            for(String className: args[1].split(","))
-                removeFinalFlag(className);
-    }
-
-    public static void removeFinalFlag(String className) throws IOException {
-        try {
-            ClassModifierReplacer.setModifiers(new ClassPool(true), className, Modifier.PUBLIC);
-        } catch(NotFoundException| CannotCompileException e) {
-            throw new IOException(e);
-        }
-    }
-
     public static void changeAugmentedStringSuperClass(ClassPool pool) throws IOException {
         try {
             SuperClassReplacer.setSuperClass(pool, AugmentedString.class.getName(), String.class.getName());
