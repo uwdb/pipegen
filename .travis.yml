@@ -5,13 +5,15 @@ env:
   - MAVEN_REPOSITORY=$HOME/.m2/repository
 before_install:
   - env
+  - mkdir stage
   - mvn dependency:resolve
   - 'javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
+           -d ./before_install
            $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/utilities/JvmUtilities.java
            $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/mutation/ClassModifierReplacer.java
            $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/utilities/JarUtilities.java
            $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/configuration/Version.java
            $TRAVIS_BUILD_DIR/src/main/java/org/brandonhaynes/pipegen/utilities/JarClassPath.java'
   - find -name *.class
-  - 'java -classpath ".:$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
+  - 'java -classpath "./before_install:$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
           org.brandonhaynes.pipegen.utilities.JvmUtilities RemoveFinalFlagFromString java.lang.String,java.lang.StringBuilder,java.lang.StringBuffer'
