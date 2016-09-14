@@ -10,8 +10,8 @@
 
     <repositories>
         <repository>
-            <id>local</id>
-            <name>local</name>
+            <id>project.local</id>
+            <name>project.local</name>
             <url>file:${project.basedir}/repo</url>
         </repository>
     </repositories>
