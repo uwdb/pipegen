@@ -14,6 +14,7 @@ before_install:
   - env
   - ls
   - ls -l bin
+  - which mvn
   - ./bin/prepare-jvm.sh
 #  - mkdir ./before_install
 #  - mvn dependency:resolve
