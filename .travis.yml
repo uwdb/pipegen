@@ -13,7 +13,7 @@ before_install:
   - ls -l /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
   - env
   - ls
-  - ls bin
+  - ls -l bin
   - ./bin/prepare-jvm.sh
 #  - mkdir ./before_install
 #  - mvn dependency:resolve
