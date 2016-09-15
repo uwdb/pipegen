@@ -26,7 +26,7 @@ before_install:
   - cd /
   - sudo find -name rt.jar
   - popd
-  - rm -f $HOME/.cache
+  - rm -rf $HOME/.cache
   - mvn dependency:purge-local-repository -DactTransitively=false -DreResolve=false
 #  - mkdir ./before_install
 #  - mvn dependency:resolve
