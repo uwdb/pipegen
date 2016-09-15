@@ -15,19 +15,19 @@ before_install:
   - sudo rm /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar
   - sudo rm /usr/lib/jvm/java-7-oracle/jre/lib/rt.jar
   - sudo rm /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar
-  - wget http://varaneckas.com/jad/jad158e.linux.static.zip
-  - unzip jad158e.linux.static.zip
-  - mkdir rt
-  - unzip -q /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -d rt
-  - ./jad rt/java/lang/String.class
-  - cat String.jad
-  - pushd .
-  - cd /
-  - sudo find -name rt.jar
-  - popd
-  - rm -rf $HOME/.cache
-  - mvn dependency:purge-local-repository -DactTransitively=false -DreResolve=false
-  - sudo rm /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
+#  - wget http://varaneckas.com/jad/jad158e.linux.static.zip
+#  - unzip jad158e.linux.static.zip
+#  - mkdir rt
+#  - unzip -q /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -d rt
+#  - ./jad rt/java/lang/String.class
+#  - cat String.jad
+#  - pushd .
+#  - cd /
+#  - sudo find -name rt.jar
+#  - popd
+#  - rm -rf $HOME/.cache
+#  - mvn dependency:purge-local-repository -DactTransitively=false -DreResolve=false
+#  - sudo rm /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
 #  - mkdir ./before_install
 #  - mvn dependency:resolve
 #  - 'sudo $JAVA_HOME/bin/javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
@@ -43,7 +43,7 @@ before_install:
 #  - ls -l /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
 #  - 'sudo $JAVA_HOME/jre/bin/java -classpath "./before_install:$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
 #          org.brandonhaynes.pipegen.utilities.JvmUtilities RemoveFinalFlagFromString java.lang.String,java.lang.StringBuilder,java.lang.StringBuffer'
-#  - ls -l /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
+#   - ls -l /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
   #./usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
   #./usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar
   #./usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar
