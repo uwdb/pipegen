@@ -23,7 +23,7 @@ before_install:
   - wget http://varaneckas.com/jad/jad158e.linux.static.zip
   - unzip jad158e.linux.static.zip
   - mkdir rt
-  - unzip /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -q -d rt
+  - unzip -q /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -d rt
   - jad rt/java/lang/String.class
   - cat String.jad
   - ls rt
