@@ -22,7 +22,7 @@ before_install:
   - sudo rm /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar
   - sudo apt-get install jd
   - mkdir rt
-  - unzip /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar rt
+  - unzip /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -d rt
   - ls rt
 #  - mkdir ./before_install
 #  - mvn dependency:resolve
