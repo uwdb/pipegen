@@ -24,7 +24,7 @@ before_install:
   - unzip jad158e.linux.static.zip
   - mkdir rt
   - unzip -q /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -d rt
-  - jad rt/java/lang/String.class
+  - ./jad rt/java/lang/String.class
   - cat String.jad
   - ls rt
 #  - mkdir ./before_install
