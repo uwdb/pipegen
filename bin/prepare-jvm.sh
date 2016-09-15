@@ -1,9 +1,11 @@
+MAVIN_BIN=/usr/bin/mvn
 MAVEN_REPOSITORY=$HOME/.m2/repository
 BUILD_DIR=.
 TARGET_DIR=./stage
 
+pwd
 mkdir $TARGET_DIR
-mvn dependency:resolve
+$MAVI_BIN dependency:resolve
 
 $JAVA_HOME/bin/javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar" \
            -d $TARGET_DIR \
