@@ -25,7 +25,7 @@ public abstract class OptimizationTest {
     }
 
     public Path getConfiguration() {
-        return Paths.get("/home/bhaynes/research/pipegen/src/test/resources/optimization.yaml"); //TODO
+        return Paths.get("src/test/resources/optimization.yaml"); //TODO
     }
 
     public String getSignature() {
@@ -33,7 +33,7 @@ public abstract class OptimizationTest {
     }
 
     protected Path getOutputPath() {
-        return Paths.get("/home/bhaynes/research/pipegen/.idea/modules/sootOutput"); //TODO
+        return Paths.get("sootOutput"); //TODO
     }
 
     protected String getInvocationMethodName() {
