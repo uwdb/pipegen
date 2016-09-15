@@ -4,7 +4,7 @@ sudo: true
 env:
   - MAVEN_REPOSITORY=$HOME/.m2/repository
 before_install:
-  #- pushd .
+  - pushd .
   #- cd /
   #- sudo find -name rt.jar
   #- popd
@@ -30,8 +30,8 @@ before_install:
 #  - ls -l /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
 #  - 'sudo $JAVA_HOME/jre/bin/java -classpath "./before_install:$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
 #          org.brandonhaynes.pipegen.utilities.JvmUtilities RemoveFinalFlagFromString java.lang.String,java.lang.StringBuilder,java.lang.StringBuffer'
-    - ls -l /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
-#./usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
-#./usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar
-#./usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar
-#./usr/lib/jvm/java-7-oracle/jre/lib/rt.jar
+  - ls -l /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
+  #./usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
+  #./usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar
+  #./usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar
+  #./usr/lib/jvm/java-7-oracle/jre/lib/rt.jar
