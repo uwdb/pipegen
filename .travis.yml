@@ -20,9 +20,12 @@ before_install:
   - sudo rm /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar
   - sudo rm /usr/lib/jvm/java-7-oracle/jre/lib/rt.jar
   - sudo rm /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar
-  - sudo apt-get install jd
+  - wget http://varaneckas.com/jad/jad158e.linux.static.zip
+  - unzip jad158e.linux.static.zip
   - mkdir rt
-  - unzip /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -d rt
+  - unzip /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -q -d rt
+  - jad rt/java/lang/String.class
+  - cat String.jad
   - ls rt
 #  - mkdir ./before_install
 #  - mvn dependency:resolve
