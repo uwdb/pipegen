@@ -4,10 +4,6 @@ sudo: true
 env:
   - MAVEN_REPOSITORY=$HOME/.m2/repository
 before_install:
-  - pushd .
-  #- cd /
-  #- sudo find -name rt.jar
-  #- popd
   #- sudo jdk_switcher use oraclejdk8
   #- sudo java -Xmx32m -version
   - ls -l /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar
@@ -26,7 +22,10 @@ before_install:
   - unzip -q /usr/lib/jvm/java-8-oracle/jre/lib/rt.jar -d rt
   - ./jad rt/java/lang/String.class
   - cat String.jad
-  - ls rt
+  - pushd .
+  - cd /
+  - sudo find -name rt.jar
+  - popd
 #  - mkdir ./before_install
 #  - mvn dependency:resolve
 #  - 'sudo $JAVA_HOME/bin/javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
