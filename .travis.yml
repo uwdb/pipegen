@@ -26,6 +26,8 @@ before_install:
   - cd /
   - sudo find -name rt.jar
   - popd
+  - rm -f $HOME/.cache
+  - mvn dependency:purge-local-repository -DactTransitively=false -DreResolve=false
 #  - mkdir ./before_install
 #  - mvn dependency:resolve
 #  - 'sudo $JAVA_HOME/bin/javac -classpath "$MAVEN_REPOSITORY/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar:$MAVEN_REPOSITORY/com/google/guava/guava/18.0/guava-18.0.jar"
