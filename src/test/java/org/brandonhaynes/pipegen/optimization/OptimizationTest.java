@@ -25,7 +25,7 @@ public abstract class OptimizationTest {
     }
 
     public Path getConfiguration() {
-        return Paths.get("src/test/resources/optimization.yaml"); //TODO
+        return Paths.get("src/test/resources/optimization.yaml");
     }
 
     public String getSignature() {
@@ -33,7 +33,7 @@ public abstract class OptimizationTest {
     }
 
     protected Path getOutputPath() {
-        return Paths.get("sootOutput"); //TODO
+        return Paths.get("sootOutput");
     }
 
     protected String getInvocationMethodName() {
