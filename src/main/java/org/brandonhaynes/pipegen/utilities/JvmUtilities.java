@@ -13,8 +13,10 @@ public class JvmUtilities {
         if(args.length != 2)
             System.out.println("Usage: JvmUtilities RemoveFinalFlagFromString class-name");
         else
-            for(String className: args[1].split(","))
+            for(String className: args[1].split(",")) {
+                System.out.println(className);
                 removeFinalFlag(className);
+            }
     }
 
     public static void removeFinalFlag(String className) throws IOException {
