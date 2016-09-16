@@ -4,14 +4,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.brandonhaynes.pipegen.configuration.CompileTimeConfiguration;
-import soot.*;
+import soot.G;
+import soot.Scene;
+import soot.SootClass;
+import soot.SootMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.options.Options;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Queue;
 import java.util.Set;
@@ -58,16 +60,6 @@ public class SootUtilities {
                 });
 
         return dependencies;
-    }
-
-    public static CallGraph getCallGraph(String entryPoint) {
-        Scene scene = initializeSoot(ArrayUtilities.newArrayList(Paths.get("/home/bhaynes/research/pipegen/lib/*"),
-                                                                 Paths.get("/home/bhaynes/research/pipegen/target/*")),
-                                     entryPoint); //TODO generalize
-        PackManager.v().runPacks();
-        PackManager.v().writeOutput();
-
-        return scene.getCallGraph();
     }
 
     public static Scene initializeSoot(CompileTimeConfiguration configuration, String entryPoint) {

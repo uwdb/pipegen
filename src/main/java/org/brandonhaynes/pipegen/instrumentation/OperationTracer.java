@@ -49,7 +49,7 @@ public class OperationTracer {
 			throw new IOException(String.format("No bytecode produced during compilation for %s: %s",
 					traceFile, output));
 		else {
-			client.attach(Integer.toString(processId), agentFile.toString(), classPath, null); // "/home/bhaynes/research/spark/assembly/target/scala-2.11/spark-assembly-2.0.0-SNAPSHOT-hadoop2.6.0.jar:/home/bhaynes/research/spark/jars/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/home/bhaynes/research/spark/jars/commons-lang/commons-lang/2.6/commons-lang-2.6.jar:/home/bhaynes/research/spark/jars/org/apache/hadoop/hadoop-common/2.6.0/hadoop-common-2.6.0.jar");
+			client.attach(Integer.toString(processId), agentFile.toString(), classPath, null);
 			return executeClient(client, bytecode, timeout);
 		}
 	}
