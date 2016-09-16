@@ -1,6 +1,6 @@
 name: Pipegen-Tests
 version: 51
-path: /home/bhaynes/research/pipegen/
+path: .
 backupPath: /tmp/backup
 instrumentation:
   classPaths:
