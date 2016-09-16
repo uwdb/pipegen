@@ -5,6 +5,3 @@ env:
   - MAVEN_REPOSITORY=$HOME/.m2/repository
 before_install:
   - ./bin/prepare-jvm.sh
-  - sudo rm /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar
-  - sudo rm /usr/lib/jvm/java-7-oracle/jre/lib/rt.jar
-  - sudo rm /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar
