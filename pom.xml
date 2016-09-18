@@ -16,6 +16,33 @@
         </repository>
     </repositories>
 
+    <profiles>
+        <profile>
+            <id>windows-profile</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <file>
+                    <exists>${java.home}/lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <tools-jar>${java.home}/lib/tools.jar</tools-jar>
+            </properties>
+        </profile>
+        <profile>
+            <id>mac-profile</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <tools-jar>${java.home}/../lib/tools.jar</tools-jar>
+            </properties>
+        </profile>
+    </profiles>
+    
     <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
@@ -119,6 +146,13 @@
             <artifactId>asm</artifactId>
             <version>3.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>jdk.tools</groupId>
+            <artifactId>jdk.tools</artifactId>
+            <version>jdk1.8.0</version>
+            <scope>system</scope>
+            <systemPath>${tools-jar}</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
@@ -138,8 +172,25 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>${tools-jar}</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.3</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -147,17 +198,11 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-<!--                            <minimizeJar>true</minimizeJar>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>-->
-                            <dependencyReducedPomLocation>
-                                ${java.io.tmpdir}/dependency-reduced-pom.xml
-                            </dependencyReducedPomLocation>
-<!--                            <relocations>
-                                <relocation>
-                                    <pattern>com.acme.coyote</pattern>
-                                    <shadedPattern>hidden.coyote</shadedPattern>
-                                </relocation>
-                            </relocations>-->
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.brandonhaynes.pipegen.PipeGen</mainClass>
+                                </transformer>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
