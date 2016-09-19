@@ -59,23 +59,58 @@ $ java -jar target/pipegen-0.1.jar [configuration YAML]
 
 PipeGen will create an optimized data pipe using the following phases:
 
-### IORedirect Phase
+### 1. IO Redirection Phase (IORedirect)
 
 First, PipeGen executes the unit tests provided in the verification section of the configuration file and identifies file IO operations.  It uses the result of this instrumentation to modify the bytecode to support transfer to and from a remote DBMS when a _reserved filename_ is specified.  See Runtime Configuration for details regarding the format of this filename.
 
-### Verification Phase (Existing Functionality)
+### 2. Verification Phase (Existing Functionality)
 
 Once PipeGen has modified the DBMS to support an initial data pipe, it executes the verification script to ensure that the associated unit tests continue to pass after the bytecode modifications.
 
-### Verification Phase (New Functionality)
+### 3. Verification Phase (New Functionality)
 
 Next, PipeGen tests the new functionality introduced into the DBMS during the IORedirect phase.  It does this by first activating a _debugging proxy_.  This proxy acts like a remote, data pipe-enabled DBMS, but reads and writes directly to and from the underlying file system.  PipeGen then activates a special mode that transmits _all_ import and export data across the new data pipe.  Finally, PipeGen executes the verification script and ensures that the unit tests pass.
 
-### Optimization Phase
+### 4. Optimization Phase (FormOpt)
 
 In this phase, PipeGen optimizes the new data pipe.  It begins by instrumenting the bytecode of the data pipes to locate import and export IO operations.  It then performs data flow analysis to identify the sources and uses of primitive values that are (eventually) converted to and from string form during the import and export process.  It then applies decorates the strings (and string-handling classes) with a special augmented type that avoids conversion and concatenation overhead.  PipeGen also examines the import and export operations for use of common IO libraries and replaces each with version optimized for transmission to a remote system.
 
-### Verification Phase (Optimized Functionality)
+### 5. FormOpt Verification Phase (Optimized Functionality)
 
 Finally, PipeGen executes the verification script using the optimized data pipe and debugging proxy to ensure that unit tests continue to pass.
 
+## Launching the Worker Directory
+
+Data pipes rely on a common _worker directory_ to identify peers and connect individual workers or partitions.  This directory must be active and accessible by each participating DBMS prior to transmitting or receiving data.  To launch the worker directory, execute the following command:
+
+```sh
+bin/directory-server.sh
+```
+
+The worker directory listens on the host and port defined in the runtime configuration described below.
+
+
+## Using a Data Pipe
+
+Once PipeGen has added a data pipe to a database system, a user may import and export data from and to a remote system by specifying a filename that matches the _reserved filename_ format.  By default, this filename is of the form `__dbms__[name]`, where `[name]` is the name of the remote DBMS producing or consuming data.  The exact filename format may be specified in the PipeGen runtime configuration file located at `/etc/pipegen/pipegen.yaml`.  This configuration file must be readable by each DBMS that uses the data pipe.  
+
+For example, in Spark we would transmit a RDD to a remote DBMS named `foo` by executing the following query:
+
+```scala
+rdd.saveAsTextFile("__dbms__foo")
+```
+
+The PipeGen runtime configuration supports the following options:
+
+
+```YAML
+filenames:
+  import: __dbms__(?<name>.+)    # Reserved filename format for import; name identifies the exporting DBMS
+  export: __dbms__(?<name>.+)    # Reserved filename format for export; name identifies the importing DBMS
+directory: http://localhost:8888 # Host and port for the worker directory
+optimization:
+  varchar-size: 1024             # Maximum size of varchar elements transmitted over a data pipe
+  vector-size:  4096             # Size of vector transmitted over a data pipe
+  allocation:   1024             # Initial vector allocation 
+timeout: 50                      # Time to wait for IO activity before disconnecting a data pipe (in seconds)
+```
