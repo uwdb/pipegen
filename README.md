@@ -6,7 +6,7 @@ PipeGen allows users to automatically create an efficient connection between pai
 
 This is the core repository for the PipeGen tool, which may to create an optimized data transfer connector between a pair of Java database systems.  For a higher-level overview, visit the [project website](http://db.cs.washington.edu/projects/pipegen) or [read the paper](https://arxiv.org/pdf/1605.01664v2.pdf).
 
-## Creating a Data Pipe
+## Configuring Data Pipe Creation
 
 To add a data pipe to a new system, first create a configuration that describes the system.  For example, to add a data pipe to the [Myria DBMS](http://myria.cs.washington.edu/) we use the following configuration:
 
@@ -48,3 +48,34 @@ instrumentation:
 datapipe:
   debug: false									          # When set, emits additional debugging information at runtime
 ```
+
+## Creating a Data Pipe
+
+To create a data pipe in a new database system, execute PipeGen as follows:
+
+```sh
+$ java -jar target/pipegen-0.1.jar [configuration YAML]
+```
+
+PipeGen will create an optimized data pipe using the following phases:
+
+### IORedirect Phase
+
+First, PipeGen executes the unit tests provided in the verification section of the configuration file and identifies file IO operations.  It uses the result of this instrumentation to modify the bytecode to support transfer to and from a remote DBMS when a _reserved filename_ is specified.  See Runtime Configuration for details regarding the format of this filename.
+
+### Verification Phase (Existing Functionality)
+
+Once PipeGen has modified the DBMS to support an initial data pipe, it executes the verification script to ensure that the associated unit tests continue to pass after the bytecode modifications.
+
+### Verification Phase (New Functionality)
+
+Next, PipeGen tests the new functionality introduced into the DBMS during the IORedirect phase.  It does this by first activating a _debugging proxy_.  This proxy acts like a remote, data pipe-enabled DBMS, but reads and writes directly to and from the underlying file system.  PipeGen then activates a special mode that transmits _all_ import and export data across the new data pipe.  Finally, PipeGen executes the verification script and ensures that the unit tests pass.
+
+### Optimization Phase
+
+In this phase, PipeGen optimizes the new data pipe.  It begins by instrumenting the bytecode of the data pipes to locate import and export IO operations.  It then performs data flow analysis to identify the sources and uses of primitive values that are (eventually) converted to and from string form during the import and export process.  It then applies decorates the strings (and string-handling classes) with a special augmented type that avoids conversion and concatenation overhead.  PipeGen also examines the import and export operations for use of common IO libraries and replaces each with version optimized for transmission to a remote system.
+
+### Verification Phase (Optimized Functionality)
+
+Finally, PipeGen executes the verification script using the optimized data pipe and debugging proxy to ensure that unit tests continue to pass.
+
