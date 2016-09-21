@@ -14,6 +14,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class YamlUtilities {
+    public static <T> T getChild(Map yaml, String key, Class<T> clazz, T defaultValue) throws IOException {
+        if(yaml.containsKey(key))
+            return getElement(yaml.get(key), clazz);
+        else
+            return defaultValue;
+    }
+
     public static <T> T getChild(Map yaml, String key, Class<T> clazz) throws IOException {
         if(!yaml.containsKey(key))
             throw new IOException("Configuration file does not contain property " + key);

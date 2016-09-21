@@ -17,6 +17,8 @@ import java.nio.file.PathMatcher;
 import java.util.stream.Stream;
 
 public class PathUtilities {
+    private static final String pipegenJarPattern = ".*/(original-)?pipegen-.*\\.jar$";
+
     public static String resolveFilename(String filename) {
         try {
             URI uri = new URI(URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
@@ -30,7 +32,12 @@ public class PathUtilities {
     }
 
     public static Stream<Path> getJavaFiles(Path fileOrDirectory) {
-        return getFileOrFiles(fileOrDirectory, "glob:*.{jar,class,java}");
+        return getJavaFiles(fileOrDirectory, true);
+    }
+
+    public static Stream<Path> getJavaFiles(Path fileOrDirectory, boolean excludePipegenJar) {
+        return getFileOrFiles(fileOrDirectory, "glob:*.{jar,class,java}").filter(p ->
+                !excludePipegenJar || !p.toString().matches(pipegenJarPattern));
     }
 
     public static Stream<Path> getFileOrFiles(Path fileOrDirectory) {
