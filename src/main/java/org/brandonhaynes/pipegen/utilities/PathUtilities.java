@@ -19,6 +19,10 @@ import java.util.stream.Stream;
 public class PathUtilities {
     private static final String pipegenJarPattern = ".*/(original-)?pipegen-.*\\.jar$";
 
+    public static String getTemporaryDirectory() {
+        return System.getProperty("java.io.tmpdir");
+    }
+
     public static String resolveFilename(String filename) {
         try {
             URI uri = new URI(URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));

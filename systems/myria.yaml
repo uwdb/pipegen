@@ -1,27 +1,18 @@
 name: Myria
 version: 51
 path: /home/bhaynes/research/myria/
-backupPath: /tmp/backup
 instrumentation:
   classPaths:
     - build/libs/*
-  port: 7780
-  timeout: 60
-  trace: $DIR/templates/Instrumentation.java
-  agent: $DIR/lib/btrace-agent.jar
-  logPath: /tmp
-  commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
   classes: .*GradleWorkerMain
-  debug: false
 optimization:
   classPaths:
     - build/libs/myria-0.1.jar
     - build/libs/commons-csv-1.1.jar
 datapipe:
-  import: ./gradlew -Dtest.single=FileScanTest cleanTest test #-Dtest.debug
+  import: ./gradlew -Dtest.single=FileScanTest cleanTest test
   export: ./gradlew -Dtest.single=DataSinkTest cleanTest test
   verify:
     - unzip -o build/libs/myria-0.1.jar -d build/main | grep brandonhaynes | cat
     - ./gradlew -Dtest.single=FileScanTest -x compileJava cleanTest test
     - ./gradlew -Dtest.single=DataSinkTest -x compileJava cleanTest test
-  debug: true

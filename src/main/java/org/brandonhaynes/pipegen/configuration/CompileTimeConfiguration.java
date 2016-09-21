@@ -6,6 +6,7 @@ import org.brandonhaynes.pipegen.configuration.tasks.ExportTask;
 import org.brandonhaynes.pipegen.configuration.tasks.ExportTaskImpl;
 import org.brandonhaynes.pipegen.configuration.tasks.ImportTask;
 import org.brandonhaynes.pipegen.configuration.tasks.ImportTaskImpl;
+import org.brandonhaynes.pipegen.utilities.PathUtilities;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -17,6 +18,8 @@ import static org.brandonhaynes.pipegen.utilities.YamlUtilities.getChild;
 import static org.brandonhaynes.pipegen.utilities.YamlUtilities.getElement;
 
 public class CompileTimeConfiguration {
+    private static final String DEFAULT_BACKUP_PATH = PathUtilities.getTemporaryDirectory();
+
     private final String name;
     private final Path configurationFile;
     private final Version version;
@@ -35,12 +38,13 @@ public class CompileTimeConfiguration {
 
     public CompileTimeConfiguration(Path file) throws IOException {
         configurationFile = Paths.get(System.getProperty("user.dir")).resolve(file);
-        Map yaml = getElement(new Yaml().load(Files.toString(configurationFile.toFile(), Charset.forName("UTF8"))), Map.class);
+        Map yaml = getElement(new Yaml().load(Files.toString(configurationFile.toFile(), Charset.forName("UTF8"))),
+                              Map.class);
 
         name = yaml.get("name").toString();
         version = new Version(Integer.parseInt(yaml.get("version").toString()), 0);
         basePath = Paths.get(yaml.get("path").toString());
-        backupPath = Paths.get(yaml.get("backupPath").toString());
+        backupPath = Paths.get(getElement(yaml, "backupPath", String.class, DEFAULT_BACKUP_PATH));
 
         instrumentationConfiguration = new InstrumentationConfiguration(this, getChild(yaml, "instrumentation", Map.class));
         optimizationConfiguration = new OptimizationConfiguration(this, getChild(yaml, "optimization", Map.class));

@@ -1,9 +1,13 @@
 package org.brandonhaynes.pipegen.utilities;
 
+import com.codahale.metrics.Metric;
 import com.google.common.collect.Lists;
+import io.netty.buffer.AbstractByteBuf;
+import io.netty.buffer.ArrowBuf;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.NotFoundException;
+import org.apache.arrow.vector.ZeroVector;
 import org.brandonhaynes.pipegen.configuration.Direction;
 import org.brandonhaynes.pipegen.configuration.RuntimeConfiguration;
 import org.brandonhaynes.pipegen.instrumentation.injected.filesystem.*;
@@ -86,11 +90,11 @@ public class ClassUtilities {
             add(CompositeVector.Accessor.class);
             add(CompositeVector.Mutator.class);
             add(CompositeVector.Reader.class);
-
-            JarUtilities.getClasses("lib/metrics-core-3.0.1.jar", false).forEach(this::add);
-            JarUtilities.getClasses("lib/arrow-memory-0.1-SNAPSHOT.jar", false).forEach(this::add);
-            JarUtilities.getClasses("lib/vector-0.1-SNAPSHOT.jar", false).forEach(this::add);
-            JarUtilities.getClasses("lib/netty-buffer-4.0.27.Final.jar", false).forEach(this::add);
+            
+            JarUtilities.getClasses(getJarPath(Metric.class), false).forEach(this::add);
+            JarUtilities.getClasses(getJarPath(ArrowBuf.class), false).forEach(this::add);
+            JarUtilities.getClasses(getJarPath(ZeroVector.class), false).forEach(this::add);
+            JarUtilities.getClasses(getJarPath(AbstractByteBuf.class), false).forEach(this::add);
         }};
     }
 
@@ -131,5 +135,9 @@ public class ClassUtilities {
 
     public static boolean isSameSubSignature(SootMethod left, SootMethod right) {
         return left.getSubSignature().equals(right.getSubSignature());
+    }
+
+    private static String getJarPath(Class representativeClass) {
+        return representativeClass.getProtectionDomain().getCodeSource().getLocation().getPath();
     }
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import javassist.ClassPath;
 import javassist.ClassPool;
 import javassist.NotFoundException;
+import org.brandonhaynes.pipegen.utilities.PathUtilities;
 import org.brandonhaynes.pipegen.utilities.YamlUtilities;
 
 import java.io.IOException;
@@ -16,9 +17,18 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.brandonhaynes.pipegen.utilities.YamlUtilities.getChild;
+import static org.brandonhaynes.pipegen.utilities.YamlUtilities.getElement;
 import static org.brandonhaynes.pipegen.utilities.YamlUtilities.makeAbsolutePath;
 
 public class InstrumentationConfiguration {
+    private static final int DEFAULT_PORT = 7780;
+    private static final int DEFAULT_TIMEOUT = 2400;
+    private static final String DEFAULT_TRACE = "$DIR/templates/Instrumentation.java";
+    private static final String DEFAULT_AGENT = "$DIR/lib/btrace-agent.jar";
+    private static final String DEFAULT_LOG = PathUtilities.getTemporaryDirectory();
+    private static final String DEFAULT_COMMANDS = "^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*";
+    private static final boolean DEFAULT_DEBUG = false;
+
     private final Collection<Path> classPaths;
     private final Collection<ClassPath> classPoolPaths = Lists.newArrayList();
     private final ClassPool pool;
@@ -32,16 +42,16 @@ public class InstrumentationConfiguration {
     private final boolean debug;
 
     InstrumentationConfiguration(CompileTimeConfiguration configuration, Map yaml) throws IOException {
-        this(Integer.parseInt(yaml.get("port").toString()),
-             Integer.parseInt(yaml.get("timeout").toString()),
-             makeAbsolutePath(configuration, yaml.get("trace")),
-             makeAbsolutePath(configuration, yaml.get("agent")),
-             makeAbsolutePath(configuration, yaml.get("logPath")),
-             Pattern.compile(yaml.get("commands").toString()),
+        this(Integer.parseInt(getElement(yaml, "port", DEFAULT_PORT).toString()),
+             Integer.parseInt(getElement(yaml, "timeout", DEFAULT_TIMEOUT).toString()),
+             makeAbsolutePath(configuration, getElement(yaml, "trace", DEFAULT_TRACE)),
+             makeAbsolutePath(configuration, getElement(yaml, "agent", DEFAULT_AGENT)),
+             makeAbsolutePath(configuration, getElement(yaml, "logPath", DEFAULT_LOG)),
+             Pattern.compile(getElement(yaml, "commands", DEFAULT_COMMANDS).toString()),
              Pattern.compile(yaml.get("classes").toString()),
              YamlUtilities.getClassPaths(configuration,
                                                   getChild(yaml, "classPaths", List.class)),
-             Boolean.parseBoolean(yaml.get("debug").toString()));
+             Boolean.parseBoolean(getElement(yaml, "debug", DEFAULT_DEBUG).toString()));
     }
 
     private InstrumentationConfiguration(int port, int timeout, Path traceFile, Path agentFile, Path logPath,

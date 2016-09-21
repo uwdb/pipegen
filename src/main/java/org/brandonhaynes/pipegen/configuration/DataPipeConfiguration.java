@@ -7,9 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.brandonhaynes.pipegen.utilities.YamlUtilities.getElement;
 import static org.brandonhaynes.pipegen.utilities.YamlUtilities.makeAbsolutePath;
 
 public class DataPipeConfiguration {
+    private static final boolean DEFAULT_DEBUG = false;
+
     private final Script verifyScript;
     private final Script importScript;
     private final Script exportScript;
@@ -21,7 +24,7 @@ public class DataPipeConfiguration {
              getScript(configuration, yaml.get("import")),
              getScript(configuration, yaml.get("export")),
              makeAbsolutePath(configuration, yaml.get("logProperties")),
-             Boolean.parseBoolean(yaml.get("debug").toString()));
+             Boolean.parseBoolean(getElement(yaml, "debug", DEFAULT_DEBUG).toString()));
     }
 
     private DataPipeConfiguration(Script verifyScript,

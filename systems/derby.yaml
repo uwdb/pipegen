@@ -1,18 +1,10 @@
 name: Derby
 version: 51
 path: /home/bhaynes/research/derby/db-derby-10.12.1.1-src
-backupPath: /tmp/backup
 instrumentation:
   classPaths:
     - jars/sane/*
-  port: 7781
-  timeout: 300
-  trace: $DIR/templates/Instrumentation.java
-  agent: $DIR/lib/btrace-agent.jar
-  logPath: /tmp
-  commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
   classes: .*JUnitTestRunner.*
-  debug: false
 optimization:
   classPaths:
     - jars/sane/*
@@ -32,4 +24,3 @@ datapipe:
                -Dthreads=1
                -DenableTestListenerEvents=true
                junit-single"
-  debug: true

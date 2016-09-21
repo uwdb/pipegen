@@ -1,6 +1,7 @@
 package org.brandonhaynes.pipegen.utilities;
 
 import com.sun.btrace.AnyType;
+import com.sun.btrace.annotations.*;
 import org.apache.hadoop.fs.Path;
 
 import java.lang.reflect.Constructor;
@@ -9,9 +10,8 @@ import java.lang.reflect.Modifier;
 
 import static com.sun.btrace.BTraceUtils.*;
 
-//TODO clean this up
 @BTrace(unsafe=true)
-public class ImportTracer {
+public class Instrumentation {
     @OnMethod(clazz="+java.lang.Readable",
             method="read")
     public static void OnInterceptedReaderRead(@Self Object self, AnyType[] args) {
@@ -160,7 +160,7 @@ public class ImportTracer {
     }
 
     @OnMethod(clazz="+java.io.FileOutputStream",
-            method="<init>") //,
+            method="<init>")
     public static void OnFileOutputStream(@Self Object self, AnyType[] args) {
         StringBuilder buffer = new StringBuilder();
 

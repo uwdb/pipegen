@@ -1,25 +1,14 @@
 name: Pipegen-Tests
 version: 51
 path: .
-backupPath: /tmp/backup
 instrumentation:
   classPaths:
     - target/
-  port: 7780
-  timeout: 60
-  trace: $DIR/templates/Instrumentation.java
-  agent: $DIR/lib/btrace-agent.jar
-  logs: /tmp
-  commands: ^(?!(org.jetbrains|org.brandonhaynes.pipegen|com.intellij.idea)).*
   classes: .*
-  debug: false
 optimization:
   classPaths:
     - target/
-  excludeClassPaths:
-    - lib/scala*.jar
 datapipe:
   import: ":"
   export: ":"
   verify: ":"
-  debug: true

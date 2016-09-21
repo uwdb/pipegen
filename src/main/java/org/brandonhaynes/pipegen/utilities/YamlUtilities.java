@@ -14,6 +14,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class YamlUtilities {
+    public static Object getElement(Map yaml, String key, Object defaultValue) {
+        if(yaml.containsKey(key))
+            return yaml.get(key);
+        else
+            return defaultValue;
+    }
+
+    public static <T> T getElement(Map yaml, String key, Class<T> clazz, T defaultValue) throws IOException {
+        return getElement(getElement(yaml, key, defaultValue), clazz);
+    }
+
     public static <T> T getChild(Map yaml, String key, Class<T> clazz, T defaultValue) throws IOException {
         if(yaml.containsKey(key))
             return getElement(yaml.get(key), clazz);
