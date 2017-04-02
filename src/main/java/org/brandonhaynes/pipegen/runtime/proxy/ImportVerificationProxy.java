@@ -22,6 +22,15 @@ public class ImportVerificationProxy implements VerificationProxy, Runnable {
     private final Path basePath;
     private volatile boolean isRunning = true;
 
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("Usage: ImportVerificationProxy [path]");
+        } else {
+            ImportVerificationProxy p = new ImportVerificationProxy(Paths.get(args[0]));
+            p.start();
+        }
+    }
+
     public ImportVerificationProxy(Path basePath) {
         this.basePath = basePath;
     }

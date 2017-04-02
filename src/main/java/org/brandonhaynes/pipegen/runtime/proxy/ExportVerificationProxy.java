@@ -24,6 +24,19 @@ public class ExportVerificationProxy implements VerificationProxy, Runnable {
     private volatile boolean isRunning = true;
     private volatile Thread thread;
 
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("Usage: ExportVerificationProxy [path]");
+        } else {
+            try {
+                ExportVerificationProxy p = new ExportVerificationProxy(Paths.get(args[0]));
+                p.start();
+            } catch (IOException e) {
+                System.out.println("Failed to create ExportVerificationProxy.");
+            }
+        }
+    }
+
     public ExportVerificationProxy(Path basePath) throws IOException {
         this.basePath = basePath;
         this.serverSocket = new ServerSocket(0);
