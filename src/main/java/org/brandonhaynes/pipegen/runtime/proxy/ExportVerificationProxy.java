@@ -1,5 +1,4 @@
 package org.brandonhaynes.pipegen.runtime.proxy;
-
 import org.brandonhaynes.pipegen.instrumentation.injected.utility.InterceptMetadata;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryClient;
 import org.brandonhaynes.pipegen.runtime.directory.WorkerDirectoryEntry;
@@ -8,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SequenceInputStream;
+import java.io.ByteArrayInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -97,12 +98,32 @@ public class ExportVerificationProxy implements VerificationProxy, Runnable {
             try {
                 try (Socket socket = handledSocket) {
                     try (InputStream stream = socket.getInputStream()) {
-                        InterceptMetadata metadata = InterceptMetadata.read(stream);
-                        log.info(String.format("Receiving %s from exporter", metadata.filename));
+                        String filename = "";
+                        boolean cClient = false;
+                        byte[] buf = new byte[1];
+                        if ((stream.read(buf)) != -1) {
+                            if ((char)buf[0] == '\0') {
+                                cClient = true;
+                                while ((stream.read(buf)) != -1) {
+                                    if ((char)buf[0] == '\n')
+                                        break;
+                                    filename += (char)buf[0];
+                                }
+                            }
+                        }
 
-                        basePath.resolve(Paths.get(metadata.filename)).getParent().toFile().mkdirs();
+                        if (!cClient) {
+                            InputStream combineStream = new SequenceInputStream(new ByteArrayInputStream(buf), stream);
+                            InterceptMetadata metadata = InterceptMetadata.read(combineStream);
+                            filename = metadata.filename;
+                        }
 
-                        try (OutputStream output = new FileOutputStream(basePath.resolve(Paths.get(metadata.filename)).toFile())) {
+
+                        log.info(String.format("Receiving %s from exporter", /*metadata.*/filename));
+
+                        basePath.resolve(Paths.get(/*metadata.*/filename)).getParent().toFile().mkdirs();
+
+                        try (OutputStream output = new FileOutputStream(basePath.resolve(Paths.get(/*metadata.*/filename)).toFile())) {
                             int bytesRead;
                             byte[] buffer = new byte[65535];
                             while ((bytesRead = stream.read(buffer)) != -1)
