@@ -77,7 +77,8 @@ public class ImportVerificationProxy implements VerificationProxy, Runnable {
                         int bytesRead;
                         byte[] buffer = new byte[4096];
 
-                        new InterceptMetadata(entry.getSystemName(), Lists.newArrayList()).write(stream);
+//                        new InterceptMetadata(entry.getSystemName(), Lists.newArrayList()).write(stream);
+                        stream.write(('\0' + entry.getSystemName() + '\n').getBytes());
 
                         while ((bytesRead = input.read(buffer)) != -1)
                             stream.write(buffer, 0, bytesRead);

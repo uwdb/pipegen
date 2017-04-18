@@ -36,6 +36,20 @@ public class InterceptMetadata implements Serializable {
         ObjectOutputStream output = new ObjectOutputStream(stream); {
             output.writeObject(this);
         }
+
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        ObjectOutput out = null;
+//        try {
+//            out = new ObjectOutputStream(bos);
+//            out.writeObject(this);
+//            out.flush();
+//            byte[] yourBytes = bos.toByteArray();
+//            for (byte b: yourBytes) {
+//                System.out.println(b);
+//            }
+//        } finally {
+//            bos.close();
+//        }
     }
 
     public static InterceptMetadata read(InputStream stream) throws IOException {
