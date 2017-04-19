@@ -1,11 +1,13 @@
 # Decompile SQLite binary to LLVM byte code with Mcsema
 
 ## Tools
-gcc  
-clang (3.8)  
-mcsema (commit 4c551fcb1dc006accdfb966d8bf4909ca35ac810)  
-IDA Pro (6.5)
-SQLite (3.7.5)
+| Name | Version | 
+| ---- | ------- |
+| gcc | Latest |
+| clang | 3.8 |
+| mcsema | Latest | 
+| IDA Pro | 6.7+|
+| SQLite | 3.7.5+ |
 
 ## Platform
 Mcsema and IDA Pro is installed on Windows 10 64 bit.
