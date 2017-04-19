@@ -3,11 +3,11 @@
 ## Tools
 | Name | Version | 
 | ---- | ------- |
-| gcc | Latest |
-| clang | 3.8 |
-| mcsema | Latest | 
-| IDA Pro | 6.7+|
-| SQLite | 3.7.5+ |
+| [gcc](https://gcc.gnu.org/) | Latest |
+| [clang](http://clang.llvm.org/) | 3.8 |
+| [mcsema](https://github.com/trailofbits/mcsema/) | Latest | 
+| [IDA Pro](https://www.hex-rays.com/products/ida) | 6.7+|
+| [SQLite](https://github.com/mackyle/sqlite) | 3.7.5+ |
 
 ## Platform
 Mcsema and IDA Pro is installed on Windows 10 64 bit.
