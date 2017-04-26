@@ -1,5 +1,10 @@
 # Decompile SQLite binary to LLVM byte code with Mcsema
 
+## Files
+
+sqlite3.bc: reconstructed from non-amalgamation source  
+sqlite3_1.bc: reconstructed from amalgamation source, not working correctly  
+
 ## Tools
 | Name | Version | 
 | ---- | ------- |
