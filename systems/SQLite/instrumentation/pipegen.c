@@ -3,9 +3,9 @@
 
 struct DB_ADDRESS *pipegen_importer = NULL;
 int import_socket = -1;
+int listen_port = PIPEGEN_SOCKET_PORT_BASE;
 LinkedList curl_handles = NULL;
 int ccurl_global_init = 0;
-// int verification = 1;
 
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -54,8 +54,6 @@ struct DB_ADDRESS *get_importer(char *name) {
     CURLcode res;
     struct MemoryStruct chunk;
     char *request_url;
-
-    // printf("Retrieving importer...\n");
 
     if (curl_handles == NULL) {
         curl_handles = init_linkedlist();
@@ -137,7 +135,6 @@ int register_importer(const char *name, char *ip, char *port) {
     int ret = 0;
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, request_url);
-        // hide default curl lib output
         curl_easy_setopt(curl, CURLOPT_NOBODY, 1);
         res = curl_easy_perform(curl);
         if(res != CURLE_OK) {
@@ -155,10 +152,9 @@ int register_importer(const char *name, char *ip, char *port) {
 FILE *pipegen_fopen_st(char *path, char *mode) {
     if (verification || strncmp(PIPEGEN_SOCKET_NAME, path, strlen(PIPEGEN_SOCKET_NAME)) == 0) {
         if (mode[0] == 'r') {
-            if (register_importer(path, "0.0.0.0", PIPEGEN_SOCKET_PORT_STR) != 0) {
-                printf("Failed to register to directory.\n");
-                return NULL;
-            }
+
+            char listen_port_str[6];
+            sprintf(listen_port_str, "%d", listen_port);
 
             if (import_socket < 0) {
                 struct sockaddr_in serv_addr;
@@ -171,15 +167,39 @@ FILE *pipegen_fopen_st(char *path, char *mode) {
 
                 serv_addr.sin_family = AF_INET;
                 serv_addr.sin_addr.s_addr = INADDR_ANY;
-                serv_addr.sin_port = htons(PIPEGEN_SOCKET_PORT);
 
-                if (bind(import_socket, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-                    printf("ERROR on binding.");
+                int try = 0;
+                int bind_success = 0;
+                // try to listen to a chosen port, retry if failed
+                while (bind_success == 0 && try < PIPEGEN_SOCKET_LISTEN_RETRY_TIME) {
+                    try++;
+
+                    // randomly select a port between 8000-9000
+                    listen_port = PIPEGEN_SOCKET_PORT_BASE + rand() % 1000;
+                    sprintf(listen_port_str, "%d", listen_port);
+
+                    serv_addr.sin_port = htons(listen_port);
+
+                    if (bind(import_socket, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+                        printf("ERROR on binding. Choosing another port...\n");
+                    } else {
+                        bind_success = 1;
+                    }
+                }
+                if (bind_success == 0) {
+                    printf("ERROR on binding. Failed after %d tries.\n", try);
                     return NULL;
                 }
+                
                 listen(import_socket,5);
                 
             }
+
+            if (register_importer(path, "0.0.0.0", listen_port_str) != 0) {
+                printf("Failed to register to directory.\n");
+                return NULL;
+            }
+
             struct sockaddr_in cli_addr;
             socklen_t clilen = sizeof(cli_addr);
             int newsockfd = accept(import_socket, (struct sockaddr *)&cli_addr, &clilen);
@@ -218,7 +238,7 @@ FILE *pipegen_fopen_st(char *path, char *mode) {
             bzero((char *) &server, sizeof(server));   
             server.sin_addr.s_addr = inet_addr(pipegen_importer->ip/*PIPEGEN_SOCKET_HOST*/);
             server.sin_family = AF_INET;
-            server.sin_port = htons(atoi(pipegen_importer->port)/*PIPEGEN_SOCKET_PORT*/);
+            server.sin_port = htons(atoi(pipegen_importer->port));
             //Connect to remote server
             if (connect(socket_desc , (struct sockaddr *)&server , sizeof(server)) < 0)
             {
