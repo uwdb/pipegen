@@ -137,6 +137,8 @@ int register_importer(const char *name, char *ip, char *port) {
     int ret = 0;
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, request_url);
+        // hide default curl lib output
+        curl_easy_setopt(curl, CURLOPT_NOBODY, 1);
         res = curl_easy_perform(curl);
         if(res != CURLE_OK) {
             fprintf(stderr, "Cannot connect to directory: %s\n",
