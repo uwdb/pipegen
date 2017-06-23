@@ -9,7 +9,6 @@
 #include <curl/curl.h>
 #include <unistd.h>
 
-#define PIPEGEN_SOCKET_NAME "pipegen.csv"
 #define PIPEGEN_SOCKET_HOST "127.0.0.1"
 #define PIPEGEN_SOCKET_LISTEN_RETRY_TIME 5
 #define PIPEGEN_SOCKET_PORT_BASE 8000
